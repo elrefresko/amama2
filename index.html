@@ -1,0 +1,1693 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#075E54" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Lista Compra" />
+
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+
+  <title>Lista de compra</title>
+
+  <style>
+:root{
+  --bg:#f6f7f8;
+  --card:#ffffff;
+  --ink:#111;
+  --muted:#666;
+  --bar:#075E54;
+  --bar2:#128C7E;
+  --accent:#00a884;
+  --danger:#c62828;
+  --warn:#f59e0b;
+  --shadow: 0 10px 30px rgba(0,0,0,.10);
+  --radius: 22px;
+  --gap: 14px;
+  --btnH: 96px;
+  --btnH2: 132px;
+  --font: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-tap-highlight-color: transparent;
+  user-select:none;
+}
+
+/* ================= HEADER GRANDE ================= */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background: linear-gradient(180deg, var(--bar), var(--bar2));
+  color:#fff;
+  padding:18px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+}
+.leftSlot,.centerSlot,.rightSlot{ display:flex; align-items:center; gap:12px; }
+.centerSlot{ flex:1; justify-content:center; }
+
+.headerBtn{
+  border:0;
+  color:#fff;
+  background: rgba(255,255,255,.20);
+  border:1px solid rgba(255,255,255,.30);
+  height: 96px;
+  min-width: 160px;
+  border-radius: 22px;
+  font-weight:1000;
+  font-size:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 0 18px;
+}
+.headerBtn.hidden{ visibility:hidden; }
+
+.smallIconBtn{
+  border:0;
+  color:#fff;
+  background: rgba(255,255,255,.20);
+  border:1px solid rgba(255,255,255,.30);
+  width:96px;
+  height:96px;
+  border-radius:22px;
+  font-weight:1000;
+  font-size:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Botón “Categorías” como texto */
+.title{
+  font-weight:1000;
+  font-size:22px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.titleBtn{
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-weight:1000;
+  font-size:22px;
+  padding:0;
+  margin:0;
+  cursor:pointer;
+}
+.titleBtn:active{ opacity:.85; }
+
+/* ================= CONTENIDO ================= */
+.wrap{
+  max-width:980px;
+  margin:0 auto;
+  padding:20px 16px 32px;
+}
+.grid{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+/* ================= BOTONES PRINCIPALES ================= */
+.bigbtn{
+  position:relative;
+  background: var(--card);
+  border:0;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  height: var(--btnH);
+  padding: 18px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-align:left;
+  font-weight:1000;
+  font-size: 24px;
+}
+.bigbtn.large{
+  height: var(--btnH2);
+  font-size: 28px;
+}
+.icon{
+  width:60px;
+  height:60px;
+  border-radius:18px;
+  display:grid;
+  place-items:center;
+  font-size:36px;
+  background:#eef7f5;
+  border:1px solid rgba(0,0,0,.06);
+}
+.subtxt{
+  font-size:15px;
+  font-weight:800;
+  color:var(--muted);
+  display:block;
+  margin-top:4px;
+}
+.badge{
+  position:absolute;
+  right:14px;
+  top:14px;
+  min-width:46px;
+  height:36px;
+  padding:0 12px;
+  border-radius:999px;
+  background: var(--accent);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:1000;
+  font-size:18px;
+}
+
+/* ================= MODAL ================= */
+.modalMask{
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,.35);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding: 14px;
+}
+.modal{
+  width:min(980px, 100%);
+  background:#fff;
+  border-radius:22px;
+  box-shadow:0 30px 80px rgba(0,0,0,.30);
+  max-height:92vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.modalHead{
+  padding:20px;
+  background:#f2f4f6;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  font-size:22px;
+  font-weight:1000;
+}
+.modalBody{
+  padding:20px;
+  overflow:auto;
+  flex:1;
+}
+.modalFoot{
+  padding:18px;
+  border-top:1px solid rgba(0,0,0,.08);
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.action{
+  flex:1;
+  height:80px;
+  border-radius:20px;
+  border:0;
+  background: var(--accent);
+  color:#fff;
+  font-weight:1000;
+  font-size:20px;
+}
+.action.secondary{
+  background:#fff;
+  color:var(--ink);
+  border:1px solid rgba(0,0,0,.12);
+}
+.action.danger{ background: var(--danger); }
+.action:disabled{ opacity:.45; }
+
+/* ================= LISTA / HISTORIAL ================= */
+.rowItem{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:16px;
+  border-radius:20px;
+  border:1px solid rgba(0,0,0,.10);
+  margin-bottom:14px;
+  background:#fff;
+}
+.rowName{
+  font-weight:1000;
+  font-size:22px;
+  flex:1;
+}
+.rowControls{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.qty{
+  font-weight:1000;
+  background:#eef7f5;
+  padding:12px 16px;
+  border-radius:16px;
+  font-size:20px;
+  min-width: 64px;
+  text-align:center;
+}
+.mini{
+  border:1px solid rgba(0,0,0,.12);
+  padding:14px 18px;
+  border-radius:16px;
+  font-weight:1000;
+  background:#fff;
+  font-size:18px;
+}
+.mini.danger{
+  color:var(--danger);
+  border-color: rgba(198,40,40,.45);
+}
+.adminCard{
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:20px;
+  background:#fff;
+  padding:16px;
+  margin-bottom:14px;
+}
+.split{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.muted{ color:#666; font-weight:800; }
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#eef7f5;
+  font-weight:1000;
+  font-size:14px;
+}
+.warnBox{
+  border:1px solid rgba(245,158,11,.45);
+  background: rgba(245,158,11,.12);
+  border-radius:20px;
+  padding:14px;
+  margin-bottom:14px;
+  font-weight:1000;
+}
+.warnBox .small{
+  margin-top:6px;
+  color:#6b4e00;
+  font-weight:900;
+}
+
+/* draggable cards (orden global) */
+.draggable{ cursor:grab; }
+.draggable:active{ cursor:grabbing; }
+
+/* voz */
+.voiceBox{
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:20px;
+  padding:16px;
+  background:#fff;
+}
+.voiceBig{
+  font-size:22px;
+  font-weight:1000;
+  margin:0;
+}
+.voiceSub{
+  margin-top:8px;
+  color:#666;
+  font-weight:800;
+}
+.transcript{
+  margin-top:12px;
+  font-weight:1000;
+  font-size:20px;
+  padding:12px;
+  border-radius:18px;
+  background:#f6f7f8;
+  border:1px solid rgba(0,0,0,.08);
+}
+
+/* ================= TOAST ================= */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:22px;
+  transform: translateX(-50%);
+  background:#111;
+  color:#fff;
+  padding:18px 26px;
+  border-radius:999px;
+  font-weight:1000;
+  font-size:20px;
+  opacity:0;
+  transition:opacity .2s ease;
+  z-index: 50;
+  pointer-events:none;
+}
+.toast.show{ opacity:1; }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HTML (tu estructura) ===== -->
+  <header class="topbar">
+    <div class="leftSlot">
+      <button id="btnBack" class="headerBtn hidden" type="button">⬅️ Volver</button>
+    </div>
+
+    <div class="centerSlot">
+      <div class="title">
+        🛒 <button id="btnHome" class="titleBtn" type="button">Categorías</button>
+      </div>
+    </div>
+
+    <div class="rightSlot">
+      <button id="btnAdmin" class="smallIconBtn" type="button" title="Admin">⚙️</button>
+      <button id="btnVoice" class="smallIconBtn" type="button" title="Voz">🎤</button>
+      <button id="btnOpenList" class="headerBtn" type="button" title="Abrir lista">LISTA (0)</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="grid" id="grid"></section>
+  </main>
+
+  <div class="modalMask" id="modalMask" aria-hidden="true">
+    <div class="modal">
+      <div class="modalHead">
+        <strong id="modalTitle">Título</strong>
+        <button class="mini" id="modalClose" type="button">Cerrar</button>
+      </div>
+      <div class="modalBody" id="modalBody"></div>
+      <div class="modalFoot" id="modalFoot"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">✅ Añadido</div>
+
+  <script>
+(() => {
+  const LS_KEY = "shopping_kiosk_v6_voice_notes";
+  const CATALOG_VERSION = 6;
+
+  const uuid = () => (crypto?.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
+
+  const DEFAULT_STATE = {
+    ui: { homeColumns: 2, soundEnabled: true },
+    categories: [
+      { id: uuid(), name: "Fruta", icon: "🍎", size: "large", items: [
+        { id: uuid(), name: "Plátanos", icon: "🍌", price: 1.60, important: false },
+        { id: uuid(), name: "Manzanas", icon: "🍎", price: 2.20, important: false },
+        { id: uuid(), name: "Naranjas", icon: "🍊", price: 1.80, important: false },
+        { id: uuid(), name: "Peras", icon: "🍐", price: 2.10, important: false },
+        { id: uuid(), name: "Uvas", icon: "🍇", price: 2.90, important: false },
+        { id: uuid(), name: "Fresas", icon: "🍓", price: 2.50, important: false },
+      ]},
+      { id: uuid(), name: "Verdura", icon: "🥬", size: "large", items: [
+        { id: uuid(), name: "Lechuga", icon: "🥬", price: 1.20, important: false },
+        { id: uuid(), name: "Tomates", icon: "🍅", price: 2.30, important: false },
+        { id: uuid(), name: "Cebollas", icon: "🧅", price: 1.40, important: false },
+        { id: uuid(), name: "Zanahorias", icon: "🥕", price: 1.30, important: false },
+        { id: uuid(), name: "Pimientos", icon: "🌶️", price: 2.70, important: false },
+        { id: uuid(), name: "Calabacín", icon: "🥒", price: 1.90, important: false },
+      ]},
+      { id: uuid(), name: "Lácteos", icon: "🥛", size: "large", items: [
+        { id: uuid(), name: "Leche", icon: "🥛", price: 1.35, important: false },
+        { id: uuid(), name: "Yogur", icon: "🥣", price: 2.20, important: false },
+        { id: uuid(), name: "Queso", icon: "🧀", price: 3.50, important: false },
+        { id: uuid(), name: "Mantequilla", icon: "🧈", price: 2.40, important: false },
+        { id: uuid(), name: "Batido", icon: "🧃", price: 1.30, important: false },
+        { id: uuid(), name: "Nata", icon: "🥛", price: 1.10, important: false },
+      ]},
+      { id: uuid(), name: "Panadería", icon: "🍞", size: "large", items: [
+        { id: uuid(), name: "Pan", icon: "🍞", price: 1.10, important: false },
+        { id: uuid(), name: "Bollos", icon: "🥐", price: 1.80, important: false },
+        { id: uuid(), name: "Pan de molde", icon: "🍞", price: 1.60, important: false },
+        { id: uuid(), name: "Croissants", icon: "🥐", price: 2.20, important: false },
+        { id: uuid(), name: "Magdalenas", icon: "🧁", price: 2.10, important: false },
+      ]},
+      { id: uuid(), name: "Limpieza", icon: "🧼", size: "large", items: [
+        { id: uuid(), name: "Detergente", icon: "🧴", price: 7.50, important: false },
+        { id: uuid(), name: "Suavizante", icon: "🧴", price: 3.40, important: false },
+        { id: uuid(), name: "Lejía", icon: "🧴", price: 1.10, important: false },
+        { id: uuid(), name: "Papel WC", icon: "🧻", price: 5.90, important: false },
+        { id: uuid(), name: "Lavavajillas", icon: "🧽", price: 2.20, important: false },
+        { id: uuid(), name: "Limpiacristales", icon: "🪟", price: 1.95, important: false },
+      ]},
+      { id: uuid(), name: "Legumbres", icon: "🫘", size: "large", items: [
+        { id: uuid(), name: "Lentejas", icon: "🫘", price: 1.40, important: false },
+        { id: uuid(), name: "Garbanzos", icon: "🫘", price: 1.50, important: false },
+        { id: uuid(), name: "Alubias", icon: "🫘", price: 1.60, important: false },
+        { id: uuid(), name: "Maíz", icon: "🌽", price: 1.30, important: false },
+      ]},
+      { id: uuid(), name: "Bebida", icon: "🥤", size: "large", items: [
+        { id: uuid(), name: "Agua", icon: "💧", price: 0.60, important: false },
+        { id: uuid(), name: "Refresco", icon: "🥤", price: 2.20, important: false },
+        { id: uuid(), name: "Zumo", icon: "🧃", price: 1.80, important: false },
+        { id: uuid(), name: "Café", icon: "☕", price: 3.80, important: false },
+      ]},
+      { id: uuid(), name: "Carne", icon: "🥩", size: "large", items: [
+        { id: uuid(), name: "Pollo", icon: "🍗", price: 5.50, important: false },
+        { id: uuid(), name: "Ternera", icon: "🥩", price: 9.80, important: false },
+        { id: uuid(), name: "Cerdo", icon: "🐖", price: 6.40, important: false },
+        { id: uuid(), name: "Salchichas", icon: "🌭", price: 2.90, important: false },
+        { id: uuid(), name: "Carne picada", icon: "🍔", price: 6.20, important: false },
+      ]},
+      { id: uuid(), name: "Pescado", icon: "🐟", size: "large", items: [
+        { id: uuid(), name: "Bacalao", icon: "🐟", price: 8.90, important: false },
+        { id: uuid(), name: "Gambas", icon: "🍤", price: 7.50, important: false },
+        { id: uuid(), name: "Langostinos", icon: "🍤", price: 9.20, important: false },
+        { id: uuid(), name: "Mejillones", icon: "🦪", price: 4.80, important: false },
+      ]},
+      { id: uuid(), name: "Pasta", icon: "🍝", size: "large", items: [
+        { id: uuid(), name: "Espaguetis", icon: "🍝", price: 1.10, important: false },
+        { id: uuid(), name: "Macarrones", icon: "🍝", price: 1.05, important: false },
+        { id: uuid(), name: "Fideos", icon: "🍝", price: 0.95, important: false },
+      ]},
+      { id: uuid(), name: "Arroz", icon: "🍚", size: "large", items: [
+        { id: uuid(), name: "Arroz redondo", icon: "🍚", price: 1.20, important: false },
+        { id: uuid(), name: "Arroz largo", icon: "🍚", price: 1.30, important: false },
+        { id: uuid(), name: "Arroz integral", icon: "🍚", price: 1.60, important: false },
+      ]},
+      { id: uuid(), name: "Básicos", icon: "🧂", size: "large", items: [
+        { id: uuid(), name: "Aceite de oliva", icon: "🫒", price: 8.90, important: false },
+        { id: uuid(), name: "Sal", icon: "🧂", price: 0.50, important: false },
+        { id: uuid(), name: "Azúcar", icon: "🍬", price: 1.10, important: false },
+        { id: uuid(), name: "Huevos", icon: "🥚", price: 2.40, important: false },
+        { id: uuid(), name: "Patatas", icon: "🥔", price: 2.20, important: false },
+      ]},
+    ],
+    globalOrder: [],
+    list: {},
+    pendingNotes: [],
+    purchases: [],
+    _catalogVersion: CATALOG_VERSION
+  };
+
+  const el = (id) => document.getElementById(id);
+  const grid = el("grid");
+  const btnBack = el("btnBack");
+  const btnOpenList = el("btnOpenList");
+  const btnAdmin = el("btnAdmin");
+  const btnVoice = el("btnVoice");
+  const btnHome = el("btnHome");
+  const modalMask = el("modalMask");
+  const modalTitle = el("modalTitle");
+  const modalBody = el("modalBody");
+  const modalFoot = el("modalFoot");
+  const modalClose = el("modalClose");
+  const toast = el("toast");
+
+  let state = loadStateOrMigrate();
+  let view = { screen: "home", categoryId: null };
+
+  forceAllItemsNormal();
+  ensureGlobalOrderIntegrity();
+  saveState();
+
+  updateListPill();
+  applyColumns();
+  render();
+
+  function loadStateOrMigrate(){
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return structuredClone(DEFAULT_STATE);
+
+    try{
+      const parsed = JSON.parse(raw);
+
+      if(!parsed.pendingNotes) parsed.pendingNotes = [];
+      if(!Array.isArray(parsed.pendingNotes)) parsed.pendingNotes = [];
+
+      if(parsed && parsed._catalogVersion === CATALOG_VERSION) return normalizeLoaded(parsed);
+
+      const ok = confirm("¿Cargar el catálogo predeterminado nuevo? (Se mantienen lista e historial)");
+      if(ok){
+        const keepUi = parsed?.ui || {};
+        const keepPurchases = Array.isArray(parsed?.purchases) ? parsed.purchases : [];
+        const keepList = parsed?.list || {};
+        const keepNotes = Array.isArray(parsed?.pendingNotes) ? parsed.pendingNotes : [];
+        const ns = structuredClone(DEFAULT_STATE);
+        ns.ui = { ...ns.ui, ...keepUi };
+        ns.purchases = keepPurchases;
+        ns.list = keepList;
+        ns.pendingNotes = keepNotes;
+        return ns;
+      }
+      return normalizeLoaded(parsed);
+    }catch{
+      return structuredClone(DEFAULT_STATE);
+    }
+  }
+
+  function normalizeLoaded(parsed){
+    const merged = {
+      ...structuredClone(DEFAULT_STATE),
+      ...parsed,
+      ui: { ...structuredClone(DEFAULT_STATE.ui), ...(parsed.ui||{}) },
+      categories: Array.isArray(parsed.categories) ? parsed.categories : structuredClone(DEFAULT_STATE.categories),
+      globalOrder: Array.isArray(parsed.globalOrder) ? parsed.globalOrder : [],
+      list: parsed.list || {},
+      pendingNotes: Array.isArray(parsed.pendingNotes) ? parsed.pendingNotes : [],
+      purchases: Array.isArray(parsed.purchases) ? parsed.purchases : [],
+      _catalogVersion: parsed._catalogVersion || 1
+    };
+
+    for (const c of merged.categories) {
+      if (typeof c.icon !== "string") c.icon = "📦";
+      if (!c.size) c.size = "large";
+      for (const it of (c.items || [])) {
+        if (typeof it.important !== "boolean") it.important = false;
+        if (!Number.isFinite(Number(it.price))) it.price = 0;
+        if (typeof it.icon !== "string") it.icon = "";
+      }
+    }
+
+    merged.pendingNotes = merged.pendingNotes
+      .filter(n => n && typeof n.text === "string")
+      .map(n => ({
+        id: n.id || uuid(),
+        text: n.text.trim(),
+        qty: Number(n.qty) > 0 ? Number(n.qty) : 1,
+        createdAt: n.createdAt || new Date().toISOString()
+      }))
+      .filter(n => n.text.length > 0);
+
+    return merged;
+  }
+
+  function saveState(){
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    updateListPill();
+  }
+
+  function forceAllItemsNormal(){
+    for(const c of state.categories){
+      for(const it of (c.items||[])){
+        if ("size" in it) delete it.size;
+      }
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  function allProductsFlat(){
+    const out=[];
+    for(const c of state.categories){
+      for(const it of (c.items||[])) out.push({category:c, product:it});
+    }
+    return out;
+  }
+
+  function findProduct(productId){
+    for(const c of state.categories){
+      const item=(c.items||[]).find(x=>x.id===productId);
+      if(item) return {category:c, item};
+    }
+    return null;
+  }
+
+  function ensureGlobalOrderIntegrity(){
+    const allIds=new Set(allProductsFlat().map(x=>x.product.id));
+    state.globalOrder=(state.globalOrder||[]).filter(id=>allIds.has(id));
+    for(const id of allIds){
+      if(!state.globalOrder.includes(id)) state.globalOrder.push(id);
+    }
+  }
+
+  function round2(n){ return Math.round((Number(n)||0)*100)/100; }
+  function eur(n){ return (Number(n)||0).toFixed(2).replace(".",",")+" €"; }
+
+  function norm(s){
+    return String(s||"")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\p{L}\p{N}\s]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  let audioCtx=null;
+  function ensureAudio(){
+    if(!state.ui.soundEnabled) return null;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return null;
+    if(!audioCtx) audioCtx=new AC();
+    if(audioCtx.state==="suspended") audioCtx.resume().catch(()=>{});
+    return audioCtx;
+  }
+  function softBeep(){
+    const ctx=ensureAudio(); if(!ctx) return;
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.type="sine"; o.frequency.value=660;
+    const now=ctx.currentTime;
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(0.06,now+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.08);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(now); o.stop(now+0.09);
+  }
+
+  let toastTimer=null;
+  function showToast(msg){
+    toast.textContent=msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>toast.classList.remove("show"),1100);
+  }
+
+  function getTotalListQty(){
+    const productQty = Object.values(state.list).reduce((a,n)=>a+(Number(n)||0),0);
+    const notesQty = (state.pendingNotes||[]).reduce((a,n)=>a+(Number(n.qty)||0),0);
+    return productQty + notesQty;
+  }
+  function updateListPill(){
+    btnOpenList.textContent=`LISTA (${getTotalListQty()})`;
+  }
+  function hasPendingNotes(){
+    return Array.isArray(state.pendingNotes) && state.pendingNotes.length > 0;
+  }
+
+  function applyColumns(){
+    const cols=state.ui.homeColumns||2;
+    const mq=window.matchMedia("(min-width: 900px)").matches;
+    grid.style.gridTemplateColumns = (cols===3 && mq) ? "repeat(3, minmax(0, 1fr))" : "repeat(2, minmax(0, 1fr))";
+  }
+  window.addEventListener("resize", applyColumns);
+
+  function makeButton({icon,title,subtitle,size,badgeQty,onClick}){
+    const b=document.createElement("button");
+    b.className="bigbtn "+(size==="large"?"large":"");
+    b.innerHTML=`
+      ${icon?`<span class="icon">${escapeHtml(icon)}</span>`:""}
+      <span>${escapeHtml(title)}${subtitle?`<span class="subtxt">${escapeHtml(subtitle)}</span>`:""}</span>
+      ${(badgeQty&&badgeQty>0)?`<span class="badge">${badgeQty}</span>`:""}
+    `;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function render(){
+    applyColumns();
+    grid.innerHTML="";
+
+    if(view.screen==="home"){
+      btnBack.classList.add("hidden");
+      state.categories.forEach(cat=>{
+        grid.appendChild(makeButton({
+          icon:cat.icon||"📦",
+          title:cat.name,
+          subtitle:`${cat.items?.length||0} artículos`,
+          size:cat.size||"large",
+          onClick:()=>{ view={screen:"category", categoryId:cat.id}; render(); }
+        }));
+      });
+      return;
+    }
+
+    if(view.screen==="category"){
+      btnBack.classList.remove("hidden");
+      const cat=state.categories.find(c=>c.id===view.categoryId);
+      if(!cat){ view={screen:"home",categoryId:null}; return render(); }
+
+      const itemsSorted=[...(cat.items||[])].sort((a,b)=>{
+        const ai=a.important?1:0, bi=b.important?1:0;
+        if(ai!==bi) return bi-ai;
+        return (a.name||"").localeCompare((b.name||""), "es", {sensitivity:"base"});
+      });
+
+      itemsSorted.forEach(item=>{
+        const qty=Number(state.list[item.id]||0);
+        const isImp=!!item.important;
+        grid.appendChild(makeButton({
+          icon:(item.icon||"").trim(),
+          title:(isImp?"⭐ ":"")+item.name,
+          subtitle:isImp?"Importante · Tocar para añadir (+1)":"Tocar para añadir (+1)",
+          size:"normal",
+          badgeQty:qty,
+          onClick:()=>addToList(item.id,1)
+        }));
+      });
+    }
+  }
+
+  function addToList(productId, delta){
+    const current=Number(state.list[productId]||0);
+    const next=current+delta;
+    if(next<=0) delete state.list[productId];
+    else state.list[productId]=next;
+
+    saveState();
+    softBeep();
+    showToast(delta>0?"✅ Añadido a la lista":"➖ Quitado");
+    render();
+  }
+
+  function removeFromList(productId){
+    delete state.list[productId];
+    saveState();
+    render();
+  }
+
+  function addNote(text, qty=1){
+    const clean = String(text||"").trim();
+    if(!clean) return;
+    state.pendingNotes.unshift({
+      id: uuid(),
+      text: clean,
+      qty: Number(qty)>0 ? Number(qty) : 1,
+      createdAt: new Date().toISOString()
+    });
+    saveState();
+  }
+
+  function incNote(noteId, delta){
+    const n = state.pendingNotes.find(x=>x.id===noteId);
+    if(!n) return;
+    const next = (Number(n.qty)||1) + delta;
+    if(next<=0){
+      state.pendingNotes = state.pendingNotes.filter(x=>x.id!==noteId);
+    }else{
+      n.qty = next;
+    }
+    saveState();
+  }
+
+  function deleteNote(noteId){
+    state.pendingNotes = state.pendingNotes.filter(x=>x.id!==noteId);
+    saveState();
+  }
+
+  function openModal(title, bodyHtml, footHtml=""){
+    modalTitle.textContent=title;
+    modalBody.innerHTML=bodyHtml;
+
+    if(footHtml){
+      modalFoot.style.display="flex";
+      modalFoot.innerHTML=footHtml;
+    }else{
+      modalFoot.style.display="none";
+      modalFoot.innerHTML="";
+    }
+
+    modalMask.style.display="flex";
+    modalMask.setAttribute("aria-hidden","false");
+  }
+
+  function closeModal(){
+    stopVoiceIfAny();
+    modalMask.style.display="none";
+    modalMask.setAttribute("aria-hidden","true");
+    modalBody.innerHTML="";
+    modalFoot.innerHTML="";
+    modalFoot.style.display="none";
+  }
+
+  modalClose.addEventListener("click", closeModal);
+  modalMask.addEventListener("click", (e)=>{ if(e.target===modalMask) closeModal(); });
+
+  function isModalOpen(){
+    return modalMask && getComputedStyle(modalMask).display !== "none";
+  }
+
+  function buildOrderedProductItems(){
+    ensureGlobalOrderIntegrity();
+    const items=[];
+    for(const pid of state.globalOrder){
+      const qty=Number(state.list[pid]||0);
+      if(qty<=0) continue;
+      const found=findProduct(pid);
+      if(!found) continue;
+      items.push({productId:pid, name:found.item.name, qty});
+    }
+    for(const pid of Object.keys(state.list)){
+      if(state.globalOrder.includes(pid)) continue;
+      const qty=Number(state.list[pid]||0);
+      if(qty<=0) continue;
+      const found=findProduct(pid);
+      if(!found) continue;
+      items.push({productId:pid, name:found.item.name, qty});
+    }
+    return items;
+  }
+
+  function openList(){
+    const notes = state.pendingNotes || [];
+    const ordered = buildOrderedProductItems();
+    const anyItems = (notes.length>0) || (ordered.length>0);
+
+    if(!anyItems){
+      openModal("🧾 Lista de la compra", `<p style="font-weight:1000;font-size:18px;margin:0;">La lista está vacía.</p>`, `
+        <button class="action secondary" id="btnHistory">📚 Historial</button>
+        <button class="action secondary" id="btnReviewNotes" disabled>📝 Revisar notas (0)</button>
+        <button class="action secondary" id="btnCreatePurchase" disabled>🧾 Crear lista</button>
+        <button class="action danger" id="btnConfirmBought" disabled>✅ Confirmar lista comprada</button>
+      `);
+      hookListFootButtons();
+      return;
+    }
+
+    let html = "";
+
+    if(notes.length>0){
+      html += `
+        <div class="warnBox">
+          ⚠️ Hay <b>${notes.length}</b> nota(s) pendiente(s) por confirmar.
+          <div class="small">No se puede crear/confirmar la compra hasta resolverlas.</div>
+        </div>
+      `;
+      for(const n of notes){
+        html += `
+          <div class="rowItem">
+            <div class="rowName">📝 ${escapeHtml(n.text)}</div>
+            <div class="rowControls">
+              <span class="qty">${Number(n.qty)||1}</span>
+              <button class="mini" data-nact="minus" data-id="${escapeHtml(n.id)}">➖</button>
+              <button class="mini" data-nact="plus" data-id="${escapeHtml(n.id)}">➕</button>
+              <button class="mini danger" data-nact="del" data-id="${escapeHtml(n.id)}">🗑️</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    for(const it of ordered){
+      html += `
+        <div class="rowItem">
+          <div class="rowName">${escapeHtml(it.name)}</div>
+          <div class="rowControls">
+            <span class="qty">${it.qty}</span>
+            <button class="mini" data-act="minus" data-id="${escapeHtml(it.productId)}">➖</button>
+            <button class="mini" data-act="plus" data-id="${escapeHtml(it.productId)}">➕</button>
+            <button class="mini danger" data-act="del" data-id="${escapeHtml(it.productId)}">🗑️</button>
+          </div>
+        </div>
+      `;
+    }
+
+    const disabled = notes.length > 0 ? "disabled" : "";
+    const notesLabel = `📝 Revisar notas (${notes.length})`;
+
+    openModal("🧾 Lista de la compra", html, `
+      <button class="action secondary" id="btnHistory">📚 Historial</button>
+      <button class="action secondary" id="btnReviewNotes" ${notes.length===0?"disabled":""}>${notesLabel}</button>
+      <button class="action secondary" id="btnCreatePurchase" ${disabled}>🧾 Crear lista</button>
+      <button class="action danger" id="btnConfirmBought" ${disabled}>✅ Confirmar lista comprada</button>
+    `);
+
+    modalBody.querySelectorAll("button[data-act]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const act=btn.getAttribute("data-act");
+        const pid=btn.getAttribute("data-id");
+        if(!pid) return;
+        if(act==="plus") addToList(pid,1);
+        if(act==="minus") addToList(pid,-1);
+        if(act==="del") removeFromList(pid);
+        openList();
+      });
+    });
+
+    modalBody.querySelectorAll("button[data-nact]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const act=btn.getAttribute("data-nact");
+        const id=btn.getAttribute("data-id");
+        if(!id) return;
+        if(act==="plus") incNote(id, 1);
+        if(act==="minus") incNote(id, -1);
+        if(act==="del"){
+          if(confirm("¿Borrar esta nota?")) deleteNote(id);
+        }
+        openList();
+      });
+    });
+
+    hookListFootButtons();
+  }
+
+  function hookListFootButtons(){
+    modalFoot.querySelector("#btnHistory")?.addEventListener("click", openHistory);
+    modalFoot.querySelector("#btnReviewNotes")?.addEventListener("click", openReviewNotes);
+    modalFoot.querySelector("#btnCreatePurchase")?.addEventListener("click", ()=>openPurchasePreview({mode:"create"}));
+    modalFoot.querySelector("#btnConfirmBought")?.addEventListener("click", ()=>openPurchasePreview({mode:"confirmBought"}));
+  }
+
+  function calcPurchaseFromCurrentList(){
+    const ordered=buildOrderedProductItems();
+    const items=[];
+    let knownTotal=0;
+    let missingCount=0;
+
+    for(const it of ordered){
+      const found=findProduct(it.productId);
+      if(!found) continue;
+      const unitPrice=Number(found.item.price);
+      const hasPrice=Number.isFinite(unitPrice)&&unitPrice>0;
+      if(hasPrice) knownTotal+=unitPrice*it.qty;
+      else missingCount+=1;
+      items.push({ productId:it.productId, name:found.item.name, qty:it.qty, unitPrice: hasPrice?unitPrice:null });
+    }
+    return { items, totals:{ known: round2(knownTotal), missingCount } };
+  }
+
+  function openPurchasePreview({mode}){
+    if(hasPendingNotes()){
+      showToast("⚠️ Primero confirma las notas");
+      openList();
+      return;
+    }
+
+    const p=calcPurchaseFromCurrentList();
+    if(p.items.length===0){ showToast("ℹ️ La lista está vacía"); return; }
+
+    let lines="";
+    for(const it of p.items){
+      lines+=`
+        <div class="rowItem">
+          <div class="rowName">${escapeHtml(it.name)}</div>
+          <div class="rowControls"><span class="qty">${it.qty}</span></div>
+        </div>
+      `;
+    }
+
+    const totalBlock=`
+      <div style="margin-top:12px;padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.10);background:#f8fafb;">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+          <div style="font-weight:1000;font-size:18px;">Total estimado</div>
+          <div style="font-weight:1000;font-size:18px;">${eur(p.totals.known)}</div>
+        </div>
+        ${p.totals.missingCount>0?`
+          <div style="margin-top:6px;color:#666;font-weight:800;">
+            Artículos sin precio: <b>${p.totals.missingCount}</b>
+          </div>`:""}
+      </div>
+    `;
+
+    const title = mode==="confirmBought" ? "✅ Confirmar lista comprada" : "🧾 Crear lista de compra";
+    const confirmText = mode==="confirmBought" ? "✅ Sí, lista comprada" : "✅ Guardar lista";
+    const confirmClass = mode==="confirmBought" ? "danger" : "";
+
+    openModal(title, `
+      <p style="margin:0 0 10px;font-weight:1000;font-size:16px;">
+        ${mode==="confirmBought"
+          ? "Esto guardará la compra en el historial y vaciará la lista actual."
+          : "Esto guardará la lista en el historial (la lista actual NO se vacía)."}
+      </p>
+      ${lines}
+      ${totalBlock}
+    `, `
+      <button class="action secondary" id="btnCancelPreview">❌ Cancelar</button>
+      <button class="action ${confirmClass}" id="btnConfirmPreview">${confirmText}</button>
+    `);
+
+    modalFoot.querySelector("#btnCancelPreview")?.addEventListener("click", openList);
+
+    modalFoot.querySelector("#btnConfirmPreview")?.addEventListener("click", ()=>{
+      const purchase={
+        id: uuid(),
+        createdAt: new Date().toISOString(),
+        status: mode==="confirmBought" ? "comprada" : "guardada",
+        items: p.items.map(x=>({ productId:x.productId, name:x.name, qty:x.qty, unitPrice:x.unitPrice })),
+        totals: p.totals
+      };
+
+      state.purchases.unshift(purchase);
+      if(mode==="confirmBought") state.list={};
+
+      saveState();
+      showToast(mode==="confirmBought" ? "✅ Compra guardada y lista vaciada" : "🧾 Lista guardada");
+      openHistory();
+      render();
+    });
+  }
+
+  function fmtDate(iso){
+    try{
+      const d=new Date(iso);
+      return d.toLocaleString("es-ES",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+    }catch{ return iso; }
+  }
+
+  function openHistory(){
+    if((state.purchases||[]).length===0){
+      openModal("📚 Historial", `<p style="margin:0;font-weight:1000;font-size:18px;">No hay compras guardadas todavía.</p>`, `
+        <button class="action secondary" id="btnBackToList">⬅️ Volver a lista</button>
+      `);
+      modalFoot.querySelector("#btnBackToList")?.addEventListener("click", openList);
+      return;
+    }
+
+    let html="";
+    state.purchases.forEach((p, idx)=>{
+      const status = p.status==="comprada" ? "✅ comprada" : "🧾 guardada";
+      html+=`
+        <div class="adminCard">
+          <div class="split">
+            <div>
+              <div style="font-weight:1000;font-size:18px;">Compra #${state.purchases.length-idx} <span class="pill">${status}</span></div>
+              <div class="muted">${escapeHtml(fmtDate(p.createdAt))}</div>
+              <div style="margin-top:8px;font-weight:1000;">Total estimado: ${eur(p.totals?.known||0)}</div>
+              ${(p.totals?.missingCount||0)>0?`<div class="muted">Sin precio: ${p.totals.missingCount}</div>`:""}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+              <button class="mini" data-hact="view" data-id="${escapeHtml(p.id)}">Ver</button>
+              <button class="mini" data-hact="repeat" data-id="${escapeHtml(p.id)}">Repetir</button>
+              <button class="mini danger" data-hact="del" data-id="${escapeHtml(p.id)}">Borrar</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    openModal("📚 Historial", html, `
+      <button class="action secondary" id="btnBackToList">⬅️ Volver a lista</button>
+    `);
+    modalFoot.querySelector("#btnBackToList")?.addEventListener("click", openList);
+
+    modalBody.querySelectorAll("button[data-hact]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const act=btn.getAttribute("data-hact");
+        const id=btn.getAttribute("data-id");
+        const p=state.purchases.find(x=>x.id===id);
+        if(!p) return;
+
+        if(act==="del"){
+          if(confirm("¿Borrar esta compra del historial?")){
+            state.purchases=state.purchases.filter(x=>x.id!==id);
+            saveState();
+            openHistory();
+          }
+          return;
+        }
+        if(act==="repeat"){
+          state.list={};
+          for(const it of (p.items||[])) state.list[it.productId]=Number(it.qty)||1;
+          saveState();
+          render();
+          openList();
+          showToast("🧾 Lista cargada");
+          return;
+        }
+        if(act==="view"){
+          openHistoryDetail(p);
+          return;
+        }
+      });
+    });
+  }
+
+  function openHistoryDetail(p){
+    let lines="";
+    for(const it of (p.items||[])){
+      lines+=`
+        <div class="rowItem">
+          <div class="rowName">${escapeHtml(it.name)}</div>
+          <div class="rowControls"><span class="qty">${Number(it.qty)||1}</span></div>
+        </div>
+      `;
+    }
+
+    const totalBlock=`
+      <div style="margin-top:12px;padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.10);background:#f8fafb;">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+          <div style="font-weight:1000;font-size:18px;">Total estimado</div>
+          <div style="font-weight:1000;font-size:18px;">${eur(p.totals?.known||0)}</div>
+        </div>
+      </div>
+    `;
+
+    openModal("🧾 Detalle de compra", `
+      <div class="muted" style="margin-bottom:10px;">
+        ${escapeHtml(fmtDate(p.createdAt))} · ${p.status==="comprada"?"✅ comprada":"🧾 guardada"}
+      </div>
+      ${lines}
+      ${totalBlock}
+    `, `
+      <button class="action secondary" id="btnBackHist">⬅️ Volver</button>
+    `);
+
+    modalFoot.querySelector("#btnBackHist")?.addEventListener("click", openHistory);
+  }
+
+  function openReviewNotes(){
+    const notes = state.pendingNotes || [];
+    if(notes.length===0){
+      showToast("ℹ️ No hay notas");
+      openList();
+      return;
+    }
+
+    let html = `
+      <div class="warnBox">
+        ⚠️ Estas notas deben confirmarse antes de crear/confirmar la compra.
+        <div class="small">Convierte cada nota en un producto existente, o crea un producto nuevo.</div>
+      </div>
+    `;
+
+    for(const n of notes){
+      html += `
+        <div class="adminCard">
+          <div class="split">
+            <div style="flex:1;min-width:220px;">
+              <div style="font-weight:1000;font-size:18px;">📝 ${escapeHtml(n.text)}</div>
+              <div class="muted">Cantidad: <b>${Number(n.qty)||1}</b></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+              <button class="mini" data-rn="convert" data-id="${escapeHtml(n.id)}">Elegir producto</button>
+              <button class="mini" data-rn="create" data-id="${escapeHtml(n.id)}">Crear producto</button>
+              <button class="mini danger" data-rn="del" data-id="${escapeHtml(n.id)}">Borrar</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    openModal(`📝 Revisar notas (${notes.length})`, html, `
+      <button class="action secondary" id="btnBackNotes">⬅️ Volver</button>
+    `);
+
+    modalFoot.querySelector("#btnBackNotes")?.addEventListener("click", openList);
+
+    modalBody.querySelectorAll("button[data-rn]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const act = btn.getAttribute("data-rn");
+        const id = btn.getAttribute("data-id");
+        const note = state.pendingNotes.find(x=>x.id===id);
+        if(!note) return;
+
+        if(act==="del"){
+          if(confirm("¿Borrar esta nota?")){
+            deleteNote(id);
+            openReviewNotes();
+          }
+          return;
+        }
+
+        if(act==="convert"){ openConvertNote(note); return; }
+        if(act==="create"){ openCreateProductFromNote(note); return; }
+      });
+    });
+  }
+
+  function similarityScore(a, b){
+    if(!a || !b) return 0;
+    if(a === b) return 100;
+    let score = 0;
+    if(b.includes(a) || a.includes(b)) score += 40;
+    const ta = new Set(a.split(" ").filter(Boolean));
+    const tb = new Set(b.split(" ").filter(Boolean));
+    let common = 0;
+    ta.forEach(t => { if(tb.has(t)) common++; });
+    score += common * 18;
+    if(b.startsWith(a) || a.startsWith(b)) score += 15;
+    return score;
+  }
+
+  function openConvertNote(note){
+    const transcript = norm(note.text);
+    const all = allProductsFlat().map(x => ({ id: x.product.id, name: x.product.name, cat: x.category.name }));
+    const scored = all.map(p => ({...p, score: similarityScore(transcript, norm(p.name))}))
+                     .sort((a,b)=>b.score-a.score)
+                     .slice(0, 12);
+
+    let html = `
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Convertir nota</div>
+        <div class="muted">Nota: <b>${escapeHtml(note.text)}</b> (x${Number(note.qty)||1})</div>
+        <div class="muted" style="margin-top:6px;">Elige el producto correcto:</div>
+      </div>
+    `;
+
+    for(const s of scored){
+      html += `
+        <div class="rowItem">
+          <div class="rowName">${escapeHtml(s.name)} <span class="muted">(${escapeHtml(s.cat)})</span></div>
+          <div class="rowControls">
+            <button class="mini" data-pick="${escapeHtml(s.id)}">Elegir</button>
+          </div>
+        </div>
+      `;
+    }
+
+    openModal("📝 Elegir producto", html, `
+      <button class="action secondary" id="btnBackToNotes">⬅️ Volver</button>
+    `);
+
+    modalFoot.querySelector("#btnBackToNotes")?.addEventListener("click", openReviewNotes);
+
+    modalBody.querySelectorAll("button[data-pick]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const pid = btn.getAttribute("data-pick");
+        if(!pid) return;
+        addToList(pid, Number(note.qty)||1);
+        deleteNote(note.id);
+        showToast("✅ Nota convertida");
+        openReviewNotes();
+      });
+    });
+  }
+
+  function openCreateProductFromNote(note){
+    let html = `
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Crear producto desde nota</div>
+        <div class="muted">Nota: <b>${escapeHtml(note.text)}</b> (x${Number(note.qty)||1})</div>
+        <div class="muted" style="margin-top:6px;">Elige la categoría:</div>
+      </div>
+    `;
+
+    state.categories.forEach(c=>{
+      html += `
+        <button class="bigbtn" style="height:96px;" data-catpick="${escapeHtml(c.id)}">
+          <span class="icon">${escapeHtml(c.icon||"📦")}</span>
+          <span>${escapeHtml(c.name)}<span class="subtxt">Crear producto aquí</span></span>
+        </button>
+      `;
+    });
+
+    openModal("➕ Crear producto", html, `
+      <button class="action secondary" id="btnBackToNotes2">⬅️ Volver</button>
+    `);
+    modalFoot.querySelector("#btnBackToNotes2")?.addEventListener("click", openReviewNotes);
+
+    modalBody.querySelectorAll("button[data-catpick]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const catId = btn.getAttribute("data-catpick");
+        const cat = state.categories.find(c=>c.id===catId);
+        if(!cat) return;
+
+        const name = prompt("Nombre del producto:", note.text) || note.text;
+        const icon = prompt("Emoji del producto (opcional):", "") || "";
+        const priceRaw = prompt("Precio (€) (opcional):", "0") || "0";
+        const price = Number(String(priceRaw).replace(",", "."));
+
+        const newItem = {
+          id: uuid(),
+          name: String(name).trim(),
+          icon: String(icon).trim(),
+          price: Number.isFinite(price) ? price : 0,
+          important: false
+        };
+
+        if(!newItem.name){
+          showToast("⚠️ Nombre vacío");
+          return;
+        }
+
+        cat.items.push(newItem);
+        ensureGlobalOrderIntegrity();
+        addToList(newItem.id, Number(note.qty)||1);
+        deleteNote(note.id);
+
+        saveState();
+        render();
+        showToast("✅ Producto creado");
+        openReviewNotes();
+      });
+    });
+  }
+
+  // ---------- Admin (con salida por engranaje) ----------
+  function openAdmin(){
+    ensureGlobalOrderIntegrity();
+    saveState();
+
+    openModal("⚙️ Admin", `
+      <div class="adminCard">
+        <div class="split">
+          <div><div style="font-weight:1000;font-size:18px;">Ajustes</div></div>
+          <button class="mini" id="btnTestSound">🔊 Probar sonido</button>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+          <div style="flex:1;min-width:220px;">
+            <div style="font-weight:900;margin-bottom:6px;">Sonido al añadir</div>
+            <select id="soundSel" style="width:100%;height:56px;border-radius:14px;border:1px solid rgba(0,0,0,.12);font-weight:900;font-size:18px;padding:0 12px;">
+              <option value="on" ${state.ui.soundEnabled ? "selected" : ""}>Activado</option>
+              <option value="off" ${!state.ui.soundEnabled ? "selected" : ""}>Desactivado</option>
+            </select>
+          </div>
+
+          <div style="flex:1;min-width:220px;">
+            <div style="font-weight:900;margin-bottom:6px;">Columnas (botones)</div>
+            <select id="colsSel" style="width:100%;height:56px;border-radius:14px;border:1px solid rgba(0,0,0,.12);font-weight:900;font-size:18px;padding:0 12px;">
+              <option value="2" ${state.ui.homeColumns == 2 ? "selected" : ""}>2 (más grande)</option>
+              <option value="3" ${state.ui.homeColumns == 3 ? "selected" : ""}>3 (más)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <button class="mini" id="btnSaveSettings">Guardar ajustes</button>
+        </div>
+      </div>
+
+      <div class="adminCard">
+        <div class="split">
+          <div><div style="font-weight:1000;font-size:18px;">Categorías</div></div>
+          <button class="mini" id="btnAddCat">➕ Categoría</button>
+        </div>
+      </div>
+
+      <div id="catsHost"></div>
+    `);
+
+    modalBody.querySelector("#btnTestSound")?.addEventListener("click", () => {
+      state.ui.soundEnabled = true;
+      saveState();
+      softBeep();
+    });
+
+    modalBody.querySelector("#btnSaveSettings")?.addEventListener("click", () => {
+      state.ui.soundEnabled = modalBody.querySelector("#soundSel").value === "on";
+      state.ui.homeColumns = Number(modalBody.querySelector("#colsSel").value) || 2;
+      saveState();
+      applyColumns();
+      showToast("✅ Ajustes guardados");
+    });
+
+    modalBody.querySelector("#btnAddCat")?.addEventListener("click", () => {
+      const name = prompt("Nombre de la categoría:");
+      if (!name) return;
+      const icon = prompt("Emoji de la categoría (opcional):", "📦") || "📦";
+      state.categories.push({ id: uuid(), name: name.trim(), icon: icon.trim(), size: "large", items: [] });
+      ensureGlobalOrderIntegrity();
+      saveState();
+      openAdmin();
+      render();
+    });
+
+    renderCatsAdmin();
+  }
+
+  function renderCatsAdmin(){
+    const host = modalBody.querySelector("#catsHost");
+    if (!host) return;
+    host.innerHTML = "";
+
+    state.categories.forEach(cat => {
+      const card = document.createElement("div");
+      card.className = "adminCard";
+      card.innerHTML = `
+        <div class="split">
+          <div>
+            <div style="font-weight:1000;font-size:18px;">${escapeHtml(cat.icon || "📦")} ${escapeHtml(cat.name)}</div>
+            <div class="muted">${(cat.items || []).length} artículos</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+            <button class="mini" data-cact="items" data-id="${escapeHtml(cat.id)}">Artículos</button>
+            <button class="mini" data-cact="edit" data-id="${escapeHtml(cat.id)}">Editar</button>
+            <button class="mini danger" data-cact="del" data-id="${escapeHtml(cat.id)}">Borrar</button>
+          </div>
+        </div>
+      `;
+      host.appendChild(card);
+    });
+
+    host.querySelectorAll("button[data-cact]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const act = btn.getAttribute("data-cact");
+        const id = btn.getAttribute("data-id");
+        const cat = state.categories.find(c => c.id === id);
+        if (!cat) return;
+
+        if (act === "del") {
+          if (confirm(`¿Borrar categoría "${cat.name}" y sus artículos?`)) {
+            for (const it of (cat.items || [])) {
+              delete state.list[it.id];
+              state.globalOrder = state.globalOrder.filter(pid => pid !== it.id);
+            }
+            state.categories = state.categories.filter(c => c.id !== id);
+            ensureGlobalOrderIntegrity();
+            saveState();
+            openAdmin();
+            render();
+          }
+          return;
+        }
+
+        if (act === "edit") {
+          const newName = prompt("Nombre:", cat.name);
+          if (!newName) return;
+          const newIcon = prompt("Emoji de categoría:", cat.icon || "📦") || "📦";
+          cat.name = newName.trim();
+          cat.icon = newIcon.trim();
+          saveState();
+          openAdmin();
+          render();
+          return;
+        }
+
+        if (act === "items") {
+          alert("Para mantener este mensaje manejable, el editor de artículos completo lo reinsertamos si lo quieres. El sistema base + voz + notas ya está listo.");
+        }
+      });
+    });
+  }
+
+  // ---------- VOZ ----------
+  let recognition = null;
+
+  function stopVoiceIfAny(){
+    try{
+      if(recognition){
+        recognition.onresult = null;
+        recognition.onerror = null;
+        recognition.onend = null;
+        recognition.stop();
+      }
+    }catch{}
+  }
+
+  function getSpeechRecognition(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return null;
+    return SR;
+  }
+
+  function openVoice(){
+    const SR = getSpeechRecognition();
+    if(!SR){
+      openModal("🎤 Voz", `
+        <div class="voiceBox">
+          <p class="voiceBig">Este dispositivo no soporta reconocimiento de voz.</p>
+          <div class="voiceSub">Prueba en Chrome (Android) actualizado.</div>
+        </div>
+      `, `<button class="action secondary" id="btnCloseVoice">Cerrar</button>`);
+      modalFoot.querySelector("#btnCloseVoice")?.addEventListener("click", closeModal);
+      return;
+    }
+
+    openModal("🎤 Voz", `
+      <div class="voiceBox">
+        <p class="voiceBig">Te escucho… di el producto</p>
+        <div class="voiceSub">Ejemplos: “leche”, “pan”, “detergente”.</div>
+        <div class="transcript" id="voiceTranscript">🎧 Escuchando…</div>
+      </div>
+    `, `
+      <button class="action secondary" id="btnCancelVoice">❌ Cancelar</button>
+    `);
+
+    modalFoot.querySelector("#btnCancelVoice")?.addEventListener("click", closeModal);
+    startRecognition(SR);
+  }
+
+  function startRecognition(SR){
+    stopVoiceIfAny();
+    recognition = new SR();
+    recognition.lang = "es-ES";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+
+    softBeep();
+
+    const tx = modalBody.querySelector("#voiceTranscript");
+    if(tx) tx.textContent = "🎧 Escuchando…";
+
+    recognition.onresult = (event) => {
+      const res = event.results?.[0]?.[0]?.transcript || "";
+      handleTranscript(res);
+    };
+
+    recognition.onerror = (event) => {
+      const msg = (event && event.error) ? String(event.error) : "error";
+      if(tx) tx.textContent = `⚠️ Error de voz: ${msg}`;
+      showToast("⚠️ No se pudo escuchar");
+    };
+
+    try{ recognition.start(); }
+    catch{
+      if(tx) tx.textContent = "⚠️ No se pudo iniciar el micrófono";
+    }
+  }
+
+  function similarityScore(a, b){
+    if(!a || !b) return 0;
+    if(a === b) return 100;
+    let score = 0;
+    if(b.includes(a) || a.includes(b)) score += 40;
+    const ta = new Set(a.split(" ").filter(Boolean));
+    const tb = new Set(b.split(" ").filter(Boolean));
+    let common = 0;
+    ta.forEach(t => { if(tb.has(t)) common++; });
+    score += common * 18;
+    if(b.startsWith(a) || a.startsWith(b)) score += 15;
+    return score;
+  }
+
+  function findBestMatches(transcriptRaw){
+    const t = norm(transcriptRaw);
+    const products = allProductsFlat().map(x => ({
+      id: x.product.id,
+      name: x.product.name,
+      nname: norm(x.product.name),
+      cat: x.category.name
+    }));
+    const scored = products.map(p => ({...p, score: similarityScore(t, p.nname)}))
+                          .sort((a,b)=>b.score-a.score);
+    return { t, scored };
+  }
+
+  function handleTranscript(transcriptRaw){
+    const raw = String(transcriptRaw||"").trim();
+    if(!raw){
+      showToast("⚠️ No entendido");
+      closeModal();
+      return;
+    }
+
+    const { scored } = findBestMatches(raw);
+    const best = scored[0];
+    const second = scored[1];
+
+    const strong = best && best.score >= 55;
+    const ambiguous = strong && second && (best.score - second.score) < 12 && second.score >= 45;
+
+    if(strong && !ambiguous){
+      addToList(best.id, 1);
+      showToast(`✅ Añadido: ${best.name}`);
+      closeModal();
+      return;
+    }
+
+    const options = scored.filter(x => x.score >= 45).slice(0, 6);
+    if(options.length >= 2){
+      let html = `
+        <div class="voiceBox">
+          <p class="voiceBig">¿Cuál querías?</p>
+          <div class="voiceSub">He entendido: “${escapeHtml(raw)}”</div>
+        </div>
+      `;
+      options.forEach(o=>{
+        html += `
+          <div class="rowItem">
+            <div class="rowName">${escapeHtml(o.name)} <span class="muted">(${escapeHtml(o.cat)})</span></div>
+            <div class="rowControls"><button class="mini" data-vpick="${escapeHtml(o.id)}">Añadir</button></div>
+          </div>
+        `;
+      });
+
+      openModal("🎤 Voz", html, `
+        <button class="action secondary" id="btnRetryVoice">🎤 Reintentar</button>
+        <button class="action secondary" id="btnCancelVoice">Cerrar</button>
+      `);
+
+      modalBody.querySelectorAll("button[data-vpick]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const pid = btn.getAttribute("data-vpick");
+          const found = findProduct(pid);
+          if(!pid || !found) return;
+          addToList(pid, 1);
+          showToast(`✅ Añadido: ${found.item.name}`);
+          closeModal();
+        });
+      });
+
+      modalFoot.querySelector("#btnRetryVoice")?.addEventListener("click", openVoice);
+      modalFoot.querySelector("#btnCancelVoice")?.addEventListener("click", closeModal);
+      return;
+    }
+
+    openModal("🎤 Voz", `
+      <div class="voiceBox">
+        <p class="voiceBig">No encuentro ese producto.</p>
+        <div class="voiceSub">He entendido: “${escapeHtml(raw)}”</div>
+        <div class="voiceSub" style="margin-top:10px;">
+          ¿Quieres crear una <b>NOTA pendiente</b> para confirmarla luego?
+        </div>
+      </div>
+    `, `
+      <button class="action secondary" id="btnNoNote">❌ Cancelar</button>
+      <button class="action" id="btnYesNote">📝 Crear nota</button>
+    `);
+
+    modalFoot.querySelector("#btnNoNote")?.addEventListener("click", closeModal);
+    modalFoot.querySelector("#btnYesNote")?.addEventListener("click", ()=>{
+      addNote(raw, 1);
+      showToast("📝 Nota creada");
+      closeModal();
+      openList();
+    });
+  }
+
+  // ---------- Eventos ----------
+  btnBack.addEventListener("click", ()=>{ view={screen:"home",categoryId:null}; render(); });
+  btnOpenList.addEventListener("click", openList);
+
+  btnAdmin.addEventListener("click", () => {
+    if (isModalOpen()) { closeModal(); return; }
+    openAdmin();
+  });
+
+  btnHome?.addEventListener("click", () => {
+    closeModal();
+    view = { screen: "home", categoryId: null };
+    render();
+  });
+
+  btnVoice.addEventListener("click", () => {
+    if (isModalOpen()) { closeModal(); return; }
+    openVoice();
+  });
+})();
+  </script>
+
+  <script>
+    // PWA (offline / instalar como app)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
