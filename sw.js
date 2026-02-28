@@ -1,4 +1,3 @@
-// sw.js (BORRA TODO Y PEGA ESTO)
 const CACHE_VERSION = "v4"; // sube a v5, v6... si cambias archivos y quieres forzar actualización
 const CACHE_NAME = `lista-compra-${CACHE_VERSION}`;
 
