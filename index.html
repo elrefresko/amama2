@@ -498,13 +498,11 @@ body{
 
   <script>
 (() => {
-  // ====== VERSIONES ======
   const LS_KEY = "programa_compras_amama_state_v3";
   const CATALOG_VERSION = 3;
 
   const uuid = () => (crypto?.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
 
-  // ====== CATÁLOGO AMAMA (SOLO TU LISTA + PRECIOS) ======
   function buildDefaultState(){
     return {
       ui: { homeColumns: 2, soundEnabled: true },
@@ -672,7 +670,6 @@ body{
     };
   }
 
-  // ---------- DOM ----------
   const el = (id) => document.getElementById(id);
   const grid = el("grid");
   const btnBack = el("btnBack");
@@ -688,7 +685,6 @@ body{
   const modalClose = el("modalClose");
   const toast = el("toast");
 
-  // ---------- State ----------
   let state = loadStateOrMigrate();
   let view = { screen: "home", categoryId: null };
 
@@ -700,19 +696,16 @@ body{
   applyColumns();
   render();
 
-  // ---------- Storage ----------
   function loadStateOrMigrate(){
     const raw = localStorage.getItem(LS_KEY);
     if(!raw) return buildDefaultState();
 
     try{
       const parsed = JSON.parse(raw);
-
       const base = buildDefaultState();
       const normalized = normalizeLoaded(parsed, base);
 
       if(Number(normalized._catalogVersion) !== CATALOG_VERSION){
-        // Migra manteniendo lo que interesa
         const keepUi = normalized.ui || {};
         const keepPurchases = Array.isArray(normalized.purchases) ? normalized.purchases : [];
         const keepList = normalized.list || {};
@@ -727,7 +720,6 @@ body{
         ns.globalOrder = keepGlobalOrder;
         ns._catalogVersion = CATALOG_VERSION;
 
-        // Si venías de otro catálogo, respetamos el tuyo si existe
         if(Array.isArray(normalized.categories) && normalized.categories.length>0){
           ns.categories = normalized.categories;
         }
@@ -795,7 +787,6 @@ body{
     }
   }
 
-  // ---------- Utils ----------
   function escapeHtml(s){
     return String(s ?? "")
       .replaceAll("&","&amp;")
@@ -841,11 +832,8 @@ body{
   }
 
   function removeProductEverywhere(productId){
-    // 1) eliminar de lista
     if(state.list && state.list[productId] != null) delete state.list[productId];
-    // 2) eliminar de globalOrder
     state.globalOrder = (state.globalOrder||[]).filter(id=>id!==productId);
-    // 3) historial se queda con el nombre (no rompemos compras viejas)
   }
 
   function round2(n){ return Math.round((Number(n)||0)*100)/100; }
@@ -868,14 +856,11 @@ body{
   }
 
   function parseEmojiInput(v){
-    // no validación dura: permitimos cualquier texto corto
     const s = String(v ?? "").trim();
     if(!s) return "";
-    // recorta si alguien pega texto largo
     return s.slice(0, 6);
   }
 
-  // ---------- Sound ----------
   let audioCtx=null;
   function ensureAudio(){
     if(!state.ui.soundEnabled) return null;
@@ -898,7 +883,6 @@ body{
     o.start(now); o.stop(now+0.09);
   }
 
-  // ---------- Toast ----------
   let toastTimer=null;
   function showToast(msg){
     toast.textContent=msg;
@@ -907,7 +891,6 @@ body{
     toastTimer=setTimeout(()=>toast.classList.remove("show"),1100);
   }
 
-  // ---------- List pill ----------
   function getTotalListQty(){
     const productQty = Object.values(state.list).reduce((a,n)=>a+(Number(n)||0),0);
     const notesQty = (state.pendingNotes||[]).reduce((a,n)=>a+(Number(n.qty)||0),0);
@@ -920,7 +903,6 @@ body{
     return Array.isArray(state.pendingNotes) && state.pendingNotes.length > 0;
   }
 
-  // ---------- Layout ----------
   function applyColumns(){
     const cols=state.ui.homeColumns||2;
     const mq=window.matchMedia("(min-width: 900px)").matches;
@@ -940,7 +922,6 @@ body{
     return b;
   }
 
-  // ---------- Render ----------
   function render(){
     applyColumns();
     grid.innerHTML="";
@@ -986,7 +967,6 @@ body{
     }
   }
 
-  // ---------- List ops (productos) ----------
   function addToList(productId, delta){
     const current=Number(state.list[productId]||0);
     const next=current+delta;
@@ -1004,7 +984,6 @@ body{
     render();
   }
 
-  // ---------- Notes ops ----------
   function addNote(text, qty=1){
     const clean = String(text||"").trim();
     if(!clean) return;
@@ -1032,7 +1011,6 @@ body{
     saveState();
   }
 
-  // ---------- Modal helpers ----------
   function openModal(title, bodyHtml, footHtml=""){
     modalTitle.textContent=title;
     modalBody.innerHTML=bodyHtml;
@@ -1063,7 +1041,6 @@ body{
     return modalMask && getComputedStyle(modalMask).display !== "none";
   }
 
-  // ---------- List view ----------
   function buildOrderedProductItems(){
     ensureGlobalOrderIntegrity();
 
@@ -1151,7 +1128,6 @@ body{
       <button class="action danger" id="btnConfirmBought" ${disabled}>✅ Confirmar lista comprada</button>
     `);
 
-    // productos
     modalBody.querySelectorAll("button[data-act]").forEach(btn=>{
       btn.addEventListener("click", ()=>{
         const act=btn.getAttribute("data-act");
@@ -1166,7 +1142,6 @@ body{
       });
     });
 
-    // notas
     modalBody.querySelectorAll("button[data-nact]").forEach(btn=>{
       btn.addEventListener("click", ()=>{
         const act=btn.getAttribute("data-nact");
@@ -1194,7 +1169,6 @@ body{
     modalFoot.querySelector("#btnConfirmBought")?.addEventListener("click", ()=>openPurchasePreview({mode:"confirmBought"}));
   }
 
-  // ---------- Purchase ----------
   function calcPurchaseFromCurrentList(){
     const ordered=buildOrderedProductItems();
     const items=[];
@@ -1284,7 +1258,6 @@ body{
     });
   }
 
-  // ---------- History ----------
   function fmtDate(iso){
     try{
       const d=new Date(iso);
@@ -1393,7 +1366,6 @@ body{
     modalFoot.querySelector("#btnBackHist")?.addEventListener("click", openHistory);
   }
 
-  // ---------- Review Notes ----------
   function openReviewNotes(){
     const notes = state.pendingNotes || [];
     if(notes.length===0){
@@ -1448,15 +1420,8 @@ body{
           return;
         }
 
-        if(act==="convert"){
-          openConvertNote(note);
-          return;
-        }
-
-        if(act==="create"){
-          openCreateProductFromNote(note);
-          return;
-        }
+        if(act==="convert"){ openConvertNote(note); return; }
+        if(act==="create"){ openCreateProductFromNote(note); return; }
       });
     });
   }
@@ -1583,7 +1548,7 @@ body{
   }
 
   // =========================
-  // ADMIN (COMPLETO)
+  // ADMIN COMPLETO (Categorías + Productos + Orden + Precios)
   // =========================
   function openAdmin(){
     const cols = Number(state.ui.homeColumns||2);
@@ -1667,18 +1632,14 @@ body{
 
     modalBody.querySelector("#btnCols2")?.addEventListener("click", ()=>{
       state.ui.homeColumns = 2;
-      saveState();
-      applyColumns();
-      render();
+      saveState(); applyColumns(); render();
       showToast("✅ 2 columnas");
       openAdmin();
     });
 
     modalBody.querySelector("#btnCols3")?.addEventListener("click", ()=>{
       state.ui.homeColumns = 3;
-      saveState();
-      applyColumns();
-      render();
+      saveState(); applyColumns(); render();
       showToast("✅ 3 columnas");
       openAdmin();
     });
@@ -1693,8 +1654,7 @@ body{
     modalBody.querySelector("#btnClearList")?.addEventListener("click", ()=>{
       if(!confirm("¿Vaciar la lista actual?")) return;
       state.list = {};
-      saveState();
-      render();
+      saveState(); render();
       showToast("🗑️ Lista vacía");
       openAdmin();
     });
@@ -1724,8 +1684,7 @@ body{
 
       state = ns;
       ensureGlobalOrderIntegrity();
-      saveState();
-      render();
+      saveState(); render();
       showToast("♻️ Catálogo reseteado");
       openAdmin();
     });
@@ -1772,8 +1731,7 @@ body{
       const icon = parseEmojiInput(prompt("Emoji de la categoría:", "📦") || "📦");
 
       state.categories.push({ id: uuid(), name, icon: icon||"📦", size:"large", items: [] });
-      saveState();
-      render();
+      saveState(); render();
       showToast("✅ Categoría creada");
       openCategoriesAdmin();
     });
@@ -1791,8 +1749,7 @@ body{
           const newIcon = parseEmojiInput(prompt("Emoji:", cat.icon || "📦") || (cat.icon||"📦"));
           cat.name = newName;
           cat.icon = newIcon || "📦";
-          saveState();
-          render();
+          saveState(); render();
           showToast("✅ Categoría editada");
           openCategoriesAdmin();
           return;
@@ -1805,12 +1762,10 @@ body{
             if(!confirm(`¿Borrar la categoría "${cat.name}"?`)) return;
           }
 
-          // borrar productos dentro
           for(const it of (cat.items||[])){
             removeProductEverywhere(it.id);
           }
 
-          // si estás dentro de esa categoría, vuelve a home
           if(view.screen==="category" && view.categoryId===cat.id){
             view = { screen:"home", categoryId:null };
           }
@@ -1877,7 +1832,6 @@ body{
 
     const filterCat = modalBody.querySelector("#prodFilterCat");
     const searchEl = modalBody.querySelector("#prodSearch");
-    const listWrap = modalBody.querySelector("#prodListWrap");
     const listEl = modalBody.querySelector("#prodList");
     const countEl = modalBody.querySelector("#prodCount");
 
@@ -1901,7 +1855,6 @@ body{
       render();
       showToast("✅ Producto creado");
 
-      // limpiar inputs
       nameEl.value = "";
       emojiEl.value = "";
       priceEl.value = "";
@@ -1957,16 +1910,13 @@ body{
           const pid = btn.getAttribute("data-id");
           if(!pid) return;
 
-          if(act==="edit"){
-            openEditProduct(pid);
-            return;
-          }
+          if(act==="edit"){ openEditProduct(pid); return; }
+
           if(act==="del"){
             const found = findProduct(pid);
             if(!found) return;
             if(!confirm(`¿Borrar el producto "${found.item.name}"?`)) return;
 
-            // quitar de categoría
             found.category.items = (found.category.items||[]).filter(x=>x.id!==pid);
             removeProductEverywhere(pid);
 
@@ -2029,7 +1979,6 @@ body{
       modalBody.querySelector("#epDelete")?.addEventListener("click", ()=>{
         if(!confirm(`¿Borrar el producto "${it.name}"?`)) return;
 
-        // quitar de categoría
         c.items = (c.items||[]).filter(x=>x.id!==productId);
         removeProductEverywhere(productId);
 
@@ -2049,13 +1998,11 @@ body{
         const newCatId = modalBody.querySelector("#epCat")?.value || c.id;
         const newCat = findCategory(newCatId) || c;
 
-        // aplicar cambios
         it.name = newName;
         it.icon = newEmoji;
         it.price = newPrice ?? 0;
         it.important = imp;
 
-        // mover si cambia categoría
         if(newCat.id !== c.id){
           c.items = (c.items||[]).filter(x=>x.id!==productId);
           newCat.items.push(it);
@@ -2075,7 +2022,7 @@ body{
     renderProdList();
   }
 
-  // ===== ORDEN DE RECOGIDA (Drag & Drop) =====
+  // ===== ORDEN DE RECOGIDA =====
   function openOrderAdmin(){
     ensureGlobalOrderIntegrity();
 
@@ -2097,7 +2044,7 @@ body{
         </div>
       </div>
 
-      <div class="adminCard" id="orderListWrap">
+      <div class="adminCard">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
           <div style="font-weight:1000;font-size:18px;">Tu orden</div>
           <div class="pill">${state.globalOrder.length} productos</div>
@@ -2235,7 +2182,6 @@ body{
     renderOrderList();
   }
 
-  // ---------- PRECIOS (MASIVO) ----------
   function openPricesAdmin(){
     const categories = state.categories || [];
     const catOptions = [
@@ -2453,7 +2399,6 @@ body{
     }
   }
 
-  // ======= PARSER DE CANTIDADES + MULTI PRODUCTO =======
   const NUM_WORDS = new Map([
     ["un",1],["una",1],["uno",1],
     ["dos",2],["tres",3],["cuatro",4],["cinco",5],
@@ -2504,10 +2449,8 @@ body{
     return t.split(",").map(x=>x.trim()).filter(Boolean);
   }
 
-  // Regla AMAMA: huevos/docena/12 huevos => producto Huevos 12
   function wantsEggPack12(nameNorm){
-    const hasEgg = /\bhuevo(s)?\b/.test(nameNorm);
-    return !!hasEgg;
+    return /\bhuevo(s)?\b/.test(nameNorm);
   }
   function computeEggPackQty(partNorm){
     if(/\bdocena(s)?\b/.test(partNorm)){
@@ -2578,7 +2521,7 @@ body{
         const packQty = computeEggPackQty(norm(part));
         const pid = findProductByNameCanonical(packName);
         if(pid){
-          recognized.push({ kind:"product", productId: pid, label: packName, qty: packQty, noteText: null });
+          recognized.push({ kind:"product", productId: pid, label: packName, qty: packQty });
         }else{
           unrecognized.push({ kind:"note", rawText: packName, qty: packQty, createNote: true });
         }
@@ -2594,31 +2537,16 @@ body{
           productId: best.id,
           label: best.name + (th.ambiguous ? " (¿?)" : ""),
           qty: qty,
-          noteText: null,
           ambiguous: th.ambiguous
         });
       }else{
-        unrecognized.push({
-          kind:"note",
-          rawText: part.trim(),
-          qty: qty,
-          createNote: true
-        });
+        unrecognized.push({ kind:"note", rawText: part.trim(), qty: qty, createNote: true });
       }
     }
 
     if(recognized.length===0 && unrecognized.length===0){
-      openModal("🎤 Voz", `
-        <div class="voiceBox">
-          <p class="voiceBig">No he detectado productos.</p>
-          <div class="voiceSub">Prueba diciendo: “leche, pan, yogur”.</div>
-        </div>
-      `, `
-        <button class="action secondary" id="btnRetryVoice">🎤 Reintentar</button>
-        <button class="action secondary" id="btnCloseVoice">Cerrar</button>
-      `);
-      modalFoot.querySelector("#btnRetryVoice")?.addEventListener("click", openVoice);
-      modalFoot.querySelector("#btnCloseVoice")?.addEventListener("click", closeModal);
+      showToast("⚠️ No he detectado productos");
+      closeModal();
       return;
     }
 
@@ -2729,7 +2657,6 @@ body{
     renderConfirm();
   }
 
-  // ---------- Events ----------
   btnBack.addEventListener("click", ()=>{ view={screen:"home",categoryId:null}; render(); });
   btnOpenList.addEventListener("click", openList);
 
@@ -2753,7 +2680,6 @@ body{
   </script>
 
   <script>
-    // PWA
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
