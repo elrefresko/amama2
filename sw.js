@@ -1,4 +1,6 @@
-const CACHE_NAME = "lista-compra-v1";
+const CACHE_VERSION = "v3"; // Sube a v4, v5... cuando hagas cambios
+const CACHE_NAME = `lista-compra-${CACHE_VERSION}`;
+
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,7 +11,15 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await Promise.all(
+        ASSETS.map((url) =>
+          cache.add(url).catch(() => {})
+        )
+      );
+    })
+  );
   self.skipWaiting();
 });
 
@@ -22,8 +32,54 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+function isNavigationRequest(request) {
+  return request.mode === "navigate";
+}
+
+function isSameOrigin(request) {
+  try {
+    return new URL(request.url).origin === self.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request).catch(() => caches.match("./")))
-  );
+  const req = event.request;
+
+  if (req.method !== "GET") return;
+
+  // HTML → network-first (para que siempre se actualice)
+  if (isNavigationRequest(req)) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put("./", copy));
+          return res;
+        })
+        .catch(() =>
+          caches.match("./").then((r) => r || caches.match("./index.html"))
+        )
+    );
+    return;
+  }
+
+  // Recursos → cache-first con actualización en segundo plano
+  if (isSameOrigin(req)) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        const fetchPromise = fetch(req)
+          .then((res) => {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+            return res;
+          })
+          .catch(() => cached);
+
+        return cached || fetchPromise || caches.match("./");
+      })
+    );
+    return;
+  }
 });
