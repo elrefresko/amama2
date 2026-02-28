@@ -1,4 +1,5 @@
-const CACHE_VERSION = "v3"; // Sube a v4, v5... cuando hagas cambios
+// sw.js (BORRA TODO Y PEGA ESTO)
+const CACHE_VERSION = "v4"; // sube a v5, v6... si cambias archivos y quieres forzar actualización
 const CACHE_NAME = `lista-compra-${CACHE_VERSION}`;
 
 const ASSETS = [
@@ -14,9 +15,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
       await Promise.all(
-        ASSETS.map((url) =>
-          cache.add(url).catch(() => {})
-        )
+        ASSETS.map((url) => cache.add(url).catch(() => {}))
       );
     })
   );
@@ -46,10 +45,9 @@ function isSameOrigin(request) {
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-
   if (req.method !== "GET") return;
 
-  // HTML → network-first (para que siempre se actualice)
+  // HTML → network-first
   if (isNavigationRequest(req)) {
     event.respondWith(
       fetch(req)
@@ -58,14 +56,12 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put("./", copy));
           return res;
         })
-        .catch(() =>
-          caches.match("./").then((r) => r || caches.match("./index.html"))
-        )
+        .catch(() => caches.match("./").then((r) => r || caches.match("./index.html")))
     );
     return;
   }
 
-  // Recursos → cache-first con actualización en segundo plano
+  // Otros recursos → cache-first + update
   if (isSameOrigin(req)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -80,6 +76,5 @@ self.addEventListener("fetch", (event) => {
         return cached || fetchPromise || caches.match("./");
       })
     );
-    return;
   }
 });
