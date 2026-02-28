@@ -1,6 +1,7 @@
+// manifest.json (BORRA TODO Y PEGA ESTO)
 {
   "id": "./",
-  "name": "Lista de compra",
+  "name": "Programa Compras AMAMA",
   "short_name": "Compra",
   "description": "App de listas de compra por categorías.",
   "start_url": "./",
