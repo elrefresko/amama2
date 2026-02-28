@@ -1,3 +1,4 @@
+<!-- index.html (BORRA TODO Y PEGA ESTO ENTERO) -->
 <!doctype html>
 <html lang="es">
 <head>
@@ -293,6 +294,7 @@ body{
   justify-content:space-between;
   align-items:flex-start;
   gap:12px;
+  flex-wrap:wrap;
 }
 .muted{ color:#666; font-weight:800; }
 .pill{
@@ -346,6 +348,53 @@ body{
   border:1px solid rgba(0,0,0,.08);
 }
 
+/* inputs admin */
+.input{
+  width:100%;
+  height:64px;
+  border-radius:18px;
+  border:1px solid rgba(0,0,0,.12);
+  padding: 0 16px;
+  font-weight:1000;
+  font-size:18px;
+  outline:none;
+  background:#fff;
+}
+.select{
+  width:100%;
+  height:64px;
+  border-radius:18px;
+  border:1px solid rgba(0,0,0,.12);
+  padding: 0 16px;
+  font-weight:1000;
+  font-size:18px;
+  outline:none;
+  background:#fff;
+}
+.priceRow{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.priceName{
+  font-weight:1000;
+  font-size:20px;
+  flex: 1;
+  min-width: 220px;
+}
+.priceInp{
+  width: 160px;
+  height:64px;
+  border-radius:18px;
+  border:1px solid rgba(0,0,0,.12);
+  padding: 0 14px;
+  font-weight:1000;
+  font-size:20px;
+  text-align:right;
+}
+
 /* ================= TOAST ================= */
 .toast{
   position:fixed;
@@ -380,7 +429,7 @@ body{
     </div>
 
     <div class="rightSlot">
-      <button id="btnAdmin" class="smallIconBtn" type="button" title="Admin">⚙️</button>
+      <button id="btnAdmin" class="smallIconBtn" type="button" title="Ajustes">⚙️</button>
       <button id="btnVoice" class="smallIconBtn" type="button" title="Voz">🎤</button>
       <button id="btnOpenList" class="headerBtn" type="button" title="Abrir lista">LISTA (0)</button>
     </div>
@@ -401,180 +450,183 @@ body{
     </div>
   </div>
 
-  <div class="toast" id="toast">✅ Añadido</div>
+  <div class="toast" id="toast">✅</div>
 
   <script>
 (() => {
-  const LS_KEY = "programa_compras_amama_v1";
-  const CATALOG_VERSION = 1;
+  // ====== VERSIONES ======
+  const LS_KEY = "programa_compras_amama_state_v2";
+  const CATALOG_VERSION = 2;
 
   const uuid = () => (crypto?.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
 
-  // ====== CATÁLOGO (SOLO TU LISTA) ======
-  const DEFAULT_STATE = {
-    ui: { homeColumns: 2, soundEnabled: true },
-    categories: [
-      { id: uuid(), name: "Comida", icon: "🍽️", size: "large", items: [
-        { id: uuid(), name: "Tranchetes", price: 2.45, important: false, icon: "" },
-        { id: uuid(), name: "Salchichas Kai", price: 1.95, important: false, icon: "" },
-        { id: uuid(), name: "Salchichas perritos", price: 2.10, important: false, icon: "" },
-        { id: uuid(), name: "Jamón serrano", price: 4.50, important: false, icon: "" },
-        { id: uuid(), name: "Jamón york", price: 3.45, important: false, icon: "" },
-        { id: uuid(), name: "Queso cabra", price: 2.80, important: false, icon: "" },
-        { id: uuid(), name: "Sardinillas", price: 1.35, important: false, icon: "" },
-        { id: uuid(), name: "Atún", price: 3.75, important: false, icon: "" },
-        { id: uuid(), name: "Nata líquida", price: 1.15, important: false, icon: "" },
-        { id: uuid(), name: "Espárragos", price: 2.30, important: false, icon: "" },
+  // ====== CATÁLOGO AMAMA (SOLO TU LISTA + PRECIOS) ======
+  function buildDefaultState(){
+    return {
+      ui: { homeColumns: 2, soundEnabled: true },
+      categories: [
+        { id: uuid(), name: "Comida", icon: "🍽️", size: "large", items: [
+          { id: uuid(), name: "Tranchetes", price: 2.45, important: false, icon: "" },
+          { id: uuid(), name: "Salchichas Kai", price: 1.95, important: false, icon: "" },
+          { id: uuid(), name: "Salchichas perritos", price: 2.10, important: false, icon: "" },
+          { id: uuid(), name: "Jamón serrano", price: 4.50, important: false, icon: "" },
+          { id: uuid(), name: "Jamón york", price: 3.45, important: false, icon: "" },
+          { id: uuid(), name: "Queso cabra", price: 2.80, important: false, icon: "" },
+          { id: uuid(), name: "Sardinillas", price: 1.35, important: false, icon: "" },
+          { id: uuid(), name: "Atún", price: 3.75, important: false, icon: "" },
+          { id: uuid(), name: "Nata líquida", price: 1.15, important: false, icon: "" },
+          { id: uuid(), name: "Espárragos", price: 2.30, important: false, icon: "" },
 
-        { id: uuid(), name: "Alubia roja", price: 1.10, important: false, icon: "" },
-        { id: uuid(), name: "Alubia blanca", price: 1.10, important: false, icon: "" },
-        { id: uuid(), name: "Lenteja", price: 1.20, important: false, icon: "" },
-        { id: uuid(), name: "Pollo", price: 6.50, important: false, icon: "" },
-        { id: uuid(), name: "Guisantes", price: 1.30, important: false, icon: "" },
-        { id: uuid(), name: "Lacitos", price: 1.20, important: false, icon: "" },
-        { id: uuid(), name: "Espirales", price: 1.20, important: false, icon: "" },
-        { id: uuid(), name: "Macarrones", price: 1.05, important: false, icon: "" },
-        { id: uuid(), name: "Arroz", price: 1.45, important: false, icon: "" },
-        { id: uuid(), name: "Fideos", price: 0.95, important: false, icon: "" },
-        { id: uuid(), name: "Caldo", price: 1.40, important: false, icon: "" },
-        { id: uuid(), name: "Carne picada", price: 3.95, important: false, icon: "" },
-        { id: uuid(), name: "Fideos chinos", price: 1.25, important: false, icon: "" },
-        { id: uuid(), name: "Bainas", price: 2.20, important: false, icon: "" },
-        { id: uuid(), name: "Cardo", price: 2.70, important: false, icon: "" },
-        { id: uuid(), name: "Acelgas", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Borraja", price: 2.50, important: false, icon: "" },
-      ]},
+          { id: uuid(), name: "Alubia roja", price: 1.10, important: false, icon: "" },
+          { id: uuid(), name: "Alubia blanca", price: 1.10, important: false, icon: "" },
+          { id: uuid(), name: "Lenteja", price: 1.20, important: false, icon: "" },
+          { id: uuid(), name: "Pollo", price: 6.50, important: false, icon: "" },
+          { id: uuid(), name: "Guisantes", price: 1.30, important: false, icon: "" },
+          { id: uuid(), name: "Lacitos", price: 1.20, important: false, icon: "" },
+          { id: uuid(), name: "Espirales", price: 1.20, important: false, icon: "" },
+          { id: uuid(), name: "Macarrones", price: 1.05, important: false, icon: "" },
+          { id: uuid(), name: "Arroz", price: 1.45, important: false, icon: "" },
+          { id: uuid(), name: "Fideos", price: 0.95, important: false, icon: "" },
+          { id: uuid(), name: "Caldo", price: 1.40, important: false, icon: "" },
+          { id: uuid(), name: "Carne picada", price: 3.95, important: false, icon: "" },
+          { id: uuid(), name: "Fideos chinos", price: 1.25, important: false, icon: "" },
+          { id: uuid(), name: "Bainas", price: 2.20, important: false, icon: "" },
+          { id: uuid(), name: "Cardo", price: 2.70, important: false, icon: "" },
+          { id: uuid(), name: "Acelgas", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Borraja", price: 2.50, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Preparado cocinar", icon: "🍳", size: "large", items: [
-        { id: uuid(), name: "Pimiento rojo", price: 2.30, important: false, icon: "" },
-        { id: uuid(), name: "Pimiento verde", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Pimiento amarillo", price: 2.30, important: false, icon: "" },
-        { id: uuid(), name: "Cebolla", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Cebolla caramelizada", price: 1.75, important: false, icon: "" },
-        { id: uuid(), name: "Ajos", price: 1.25, important: false, icon: "" },
-        { id: uuid(), name: "Ajo en polvo", price: 1.35, important: false, icon: "" },
-        { id: uuid(), name: "Chorizo dulce", price: 2.40, important: false, icon: "" },
-        { id: uuid(), name: "Zanahorias", price: 1.30, important: false, icon: "" },
-        { id: uuid(), name: "Sal", price: 0.55, important: false, icon: "" },
-        { id: uuid(), name: "Limones", price: 1.80, important: false, icon: "" },
-        { id: uuid(), name: "Aceite oliva", price: 9.50, important: false, icon: "" },
-        { id: uuid(), name: "Aceite girasol", price: 2.40, important: false, icon: "" },
-        { id: uuid(), name: "Vinagre", price: 0.95, important: false, icon: "" },
-        { id: uuid(), name: "Vinagre modena", price: 1.35, important: false, icon: "" },
-        { id: uuid(), name: "Huevos 12", price: 3.30, important: false, icon: "" },
-        { id: uuid(), name: "Tomate frito", price: 1.20, important: false, icon: "" },
-        { id: uuid(), name: "Perejil", price: 1.10, important: false, icon: "" },
-        { id: uuid(), name: "Pimienta negra", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Harina", price: 0.95, important: false, icon: "" },
-        { id: uuid(), name: "Pan rallado", price: 1.10, important: false, icon: "" },
-        { id: uuid(), name: "Patatas", price: 2.50, important: false, icon: "" },
-      ]},
+        { id: uuid(), name: "Preparado cocinar", icon: "🍳", size: "large", items: [
+          { id: uuid(), name: "Pimiento rojo", price: 2.30, important: false, icon: "" },
+          { id: uuid(), name: "Pimiento verde", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Pimiento amarillo", price: 2.30, important: false, icon: "" },
+          { id: uuid(), name: "Cebolla", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Cebolla caramelizada", price: 1.75, important: false, icon: "" },
+          { id: uuid(), name: "Ajos", price: 1.25, important: false, icon: "" },
+          { id: uuid(), name: "Ajo en polvo", price: 1.35, important: false, icon: "" },
+          { id: uuid(), name: "Chorizo dulce", price: 2.40, important: false, icon: "" },
+          { id: uuid(), name: "Zanahorias", price: 1.30, important: false, icon: "" },
+          { id: uuid(), name: "Sal", price: 0.55, important: false, icon: "" },
+          { id: uuid(), name: "Limones", price: 1.80, important: false, icon: "" },
+          { id: uuid(), name: "Aceite oliva", price: 9.50, important: false, icon: "" },
+          { id: uuid(), name: "Aceite girasol", price: 2.40, important: false, icon: "" },
+          { id: uuid(), name: "Vinagre", price: 0.95, important: false, icon: "" },
+          { id: uuid(), name: "Vinagre modena", price: 1.35, important: false, icon: "" },
+          { id: uuid(), name: "Huevos 12", price: 3.30, important: false, icon: "" },
+          { id: uuid(), name: "Tomate frito", price: 1.20, important: false, icon: "" },
+          { id: uuid(), name: "Perejil", price: 1.10, important: false, icon: "" },
+          { id: uuid(), name: "Pimienta negra", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Harina", price: 0.95, important: false, icon: "" },
+          { id: uuid(), name: "Pan rallado", price: 1.10, important: false, icon: "" },
+          { id: uuid(), name: "Patatas", price: 2.50, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Desayuno", icon: "🥞", size: "large", items: [
-        { id: uuid(), name: "Leche", price: 1.10, important: false, icon: "" },
-        { id: uuid(), name: "Azúcar", price: 1.15, important: false, icon: "" },
-        { id: uuid(), name: "Café", price: 2.70, important: false, icon: "" },
-        { id: uuid(), name: "Cápsulas", price: 3.60, important: false, icon: "" },
-        { id: uuid(), name: "Tostarrica", price: 1.75, important: false, icon: "" },
-        { id: uuid(), name: "Galletas relieve", price: 1.70, important: false, icon: "" },
-        { id: uuid(), name: "Magdalenas", price: 2.10, important: false, icon: "" },
-        { id: uuid(), name: "Tostadas integrales", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Miel", price: 3.20, important: false, icon: "" },
-        { id: uuid(), name: "Mantequilla", price: 2.30, important: false, icon: "" },
-        { id: uuid(), name: "Mermelada", price: 1.55, important: false, icon: "" },
-        { id: uuid(), name: "Chocolate", price: 1.40, important: false, icon: "" },
-        { id: uuid(), name: "Churros", price: 2.30, important: false, icon: "" },
-        { id: uuid(), name: "Sobres flan", price: 1.20, important: false, icon: "" },
-        { id: uuid(), name: "Natillas", price: 1.35, important: false, icon: "" },
-      ]},
+        { id: uuid(), name: "Desayuno", icon: "🥞", size: "large", items: [
+          { id: uuid(), name: "Leche", price: 1.10, important: false, icon: "" },
+          { id: uuid(), name: "Azúcar", price: 1.15, important: false, icon: "" },
+          { id: uuid(), name: "Café", price: 2.70, important: false, icon: "" },
+          { id: uuid(), name: "Cápsulas", price: 3.60, important: false, icon: "" },
+          { id: uuid(), name: "Tostarrica", price: 1.75, important: false, icon: "" },
+          { id: uuid(), name: "Galletas relieve", price: 1.70, important: false, icon: "" },
+          { id: uuid(), name: "Magdalenas", price: 2.10, important: false, icon: "" },
+          { id: uuid(), name: "Tostadas integrales", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Miel", price: 3.20, important: false, icon: "" },
+          { id: uuid(), name: "Mantequilla", price: 2.30, important: false, icon: "" },
+          { id: uuid(), name: "Mermelada", price: 1.55, important: false, icon: "" },
+          { id: uuid(), name: "Chocolate", price: 1.40, important: false, icon: "" },
+          { id: uuid(), name: "Churros", price: 2.30, important: false, icon: "" },
+          { id: uuid(), name: "Sobres flan", price: 1.20, important: false, icon: "" },
+          { id: uuid(), name: "Natillas", price: 1.35, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Postres", icon: "🍰", size: "large", items: [
-        { id: uuid(), name: "Yogures naturales", price: 1.80, important: false, icon: "" },
-        { id: uuid(), name: "Yogures sabores", price: 2.10, important: false, icon: "" },
-        { id: uuid(), name: "Queso Burgos", price: 1.70, important: false, icon: "" },
-        { id: uuid(), name: "Queso pieza", price: 4.50, important: false, icon: "" },
-        { id: uuid(), name: "Manzanas", price: 2.20, important: false, icon: "" },
-        { id: uuid(), name: "Naranja", price: 2.10, important: false, icon: "" },
-        { id: uuid(), name: "Plátano", price: 1.80, important: false, icon: "" },
-      ]},
+        { id: uuid(), name: "Postres", icon: "🍰", size: "large", items: [
+          { id: uuid(), name: "Yogures naturales", price: 1.80, important: false, icon: "" },
+          { id: uuid(), name: "Yogures sabores", price: 2.10, important: false, icon: "" },
+          { id: uuid(), name: "Queso Burgos", price: 1.70, important: false, icon: "" },
+          { id: uuid(), name: "Queso pieza", price: 4.50, important: false, icon: "" },
+          { id: uuid(), name: "Manzanas", price: 2.20, important: false, icon: "" },
+          { id: uuid(), name: "Naranja", price: 2.10, important: false, icon: "" },
+          { id: uuid(), name: "Plátano", price: 1.80, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Bebidas", icon: "🥤", size: "large", items: [
-        { id: uuid(), name: "Agua garrafa", price: 0.75, important: false, icon: "" },
-        { id: uuid(), name: "Vino blanco", price: 2.30, important: false, icon: "" },
-        { id: uuid(), name: "Zumos", price: 1.65, important: false, icon: "" },
-        { id: uuid(), name: "Cerveza", price: 3.30, important: false, icon: "" },
-        { id: uuid(), name: "Seven Up", price: 1.85, important: false, icon: "" },
-      ]},
+        { id: uuid(), name: "Bebidas", icon: "🥤", size: "large", items: [
+          { id: uuid(), name: "Agua garrafa", price: 0.75, important: false, icon: "" },
+          { id: uuid(), name: "Vino blanco", price: 2.30, important: false, icon: "" },
+          { id: uuid(), name: "Zumos", price: 1.65, important: false, icon: "" },
+          { id: uuid(), name: "Cerveza", price: 3.30, important: false, icon: "" },
+          { id: uuid(), name: "Seven Up", price: 1.85, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Salsas", icon: "🥫", size: "large", items: [
-        { id: uuid(), name: "Mahonesa", price: 1.35, important: false, icon: "" },
-        { id: uuid(), name: "Alioli", price: 1.55, important: false, icon: "" },
-        { id: uuid(), name: "Brava", price: 1.30, important: false, icon: "" },
-        { id: uuid(), name: "Ketchup", price: 1.20, important: false, icon: "" },
-        { id: uuid(), name: "Barbacoa", price: 1.35, important: false, icon: "" },
-        { id: uuid(), name: "Agridulce", price: 1.40, important: false, icon: "" },
-      ]},
+        { id: uuid(), name: "Salsas", icon: "🥫", size: "large", items: [
+          { id: uuid(), name: "Mahonesa", price: 1.35, important: false, icon: "" },
+          { id: uuid(), name: "Alioli", price: 1.55, important: false, icon: "" },
+          { id: uuid(), name: "Brava", price: 1.30, important: false, icon: "" },
+          { id: uuid(), name: "Ketchup", price: 1.20, important: false, icon: "" },
+          { id: uuid(), name: "Barbacoa", price: 1.35, important: false, icon: "" },
+          { id: uuid(), name: "Agridulce", price: 1.40, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Congelados", icon: "❄️", size: "large", items: [
-        { id: uuid(), name: "San jacobos", price: 2.60, important: false, icon: "" },
-        { id: uuid(), name: "Empanadillas", price: 2.30, important: false, icon: "" },
-        { id: uuid(), name: "Lasaña", price: 2.70, important: false, icon: "" },
-        { id: uuid(), name: "Canelones", price: 2.80, important: false, icon: "" },
-      ]},
+        { id: uuid(), name: "Congelados", icon: "❄️", size: "large", items: [
+          { id: uuid(), name: "San jacobos", price: 2.60, important: false, icon: "" },
+          { id: uuid(), name: "Empanadillas", price: 2.30, important: false, icon: "" },
+          { id: uuid(), name: "Lasaña", price: 2.70, important: false, icon: "" },
+          { id: uuid(), name: "Canelones", price: 2.80, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Higiene", icon: "🧴", size: "large", items: [
-        { id: uuid(), name: "Dentífrico", price: 1.30, important: false, icon: "" },
-        { id: uuid(), name: "Enjuague bucal", price: 1.80, important: false, icon: "" },
-        { id: uuid(), name: "Papel baño", price: 4.50, important: false, icon: "" },
-        { id: uuid(), name: "Toallitas húmedas", price: 1.20, important: false, icon: "" },
-        { id: uuid(), name: "Champú", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Gel", price: 1.35, important: false, icon: "" },
-        { id: uuid(), name: "Crema corporal", price: 2.60, important: false, icon: "" },
-        { id: uuid(), name: "Bastoncillos", price: 1.10, important: false, icon: "" },
-        { id: uuid(), name: "Pastillas baño", price: 2.40, important: false, icon: "" },
-        { id: uuid(), name: "Desodorante", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Clinex / pañuelos", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Agua micelar", price: 2.90, important: false, icon: "" },
-        { id: uuid(), name: "Algodones", price: 1.30, important: false, icon: "" },
-      ]},
+        { id: uuid(), name: "Higiene", icon: "🧴", size: "large", items: [
+          { id: uuid(), name: "Dentífrico", price: 1.30, important: false, icon: "" },
+          { id: uuid(), name: "Enjuague bucal", price: 1.80, important: false, icon: "" },
+          { id: uuid(), name: "Papel baño", price: 4.50, important: false, icon: "" },
+          { id: uuid(), name: "Toallitas húmedas", price: 1.20, important: false, icon: "" },
+          { id: uuid(), name: "Champú", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Gel", price: 1.35, important: false, icon: "" },
+          { id: uuid(), name: "Crema corporal", price: 2.60, important: false, icon: "" },
+          { id: uuid(), name: "Bastoncillos", price: 1.10, important: false, icon: "" },
+          { id: uuid(), name: "Pastillas baño", price: 2.40, important: false, icon: "" },
+          { id: uuid(), name: "Desodorante", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Clinex / pañuelos", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Agua micelar", price: 2.90, important: false, icon: "" },
+          { id: uuid(), name: "Algodones", price: 1.30, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Limpieza", icon: "🧼", size: "large", items: [
-        { id: uuid(), name: "Fairy", price: 2.85, important: false, icon: "" },
-        { id: uuid(), name: "CIF", price: 1.75, important: false, icon: "" },
-        { id: uuid(), name: "KH7", price: 2.20, important: false, icon: "" },
-        { id: uuid(), name: "Bayetas", price: 1.25, important: false, icon: "" },
-        { id: uuid(), name: "Estropajo", price: 1.10, important: false, icon: "" },
-        { id: uuid(), name: "Estropajo verde", price: 1.30, important: false, icon: "" },
-        { id: uuid(), name: "Lejía azul", price: 0.85, important: false, icon: "" },
-        { id: uuid(), name: "Lavavajillas", price: 2.10, important: false, icon: "" },
-        { id: uuid(), name: "Abrillantador", price: 3.10, important: false, icon: "" },
-        { id: uuid(), name: "Sal lavavajillas", price: 1.20, important: false, icon: "" },
-        { id: uuid(), name: "Detergente Marsella", price: 6.50, important: false, icon: "" },
-        { id: uuid(), name: "Suavizante blanco", price: 2.20, important: false, icon: "" },
-        { id: uuid(), name: "Lejía ropa", price: 0.90, important: false, icon: "" },
-        { id: uuid(), name: "Fregasuelos", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Fregona", price: 3.50, important: false, icon: "" },
-        { id: uuid(), name: "Bolsas basura", price: 1.50, important: false, icon: "" },
-        { id: uuid(), name: "Rollo cocina", price: 2.00, important: false, icon: "" },
-        { id: uuid(), name: "Papel albal", price: 2.10, important: false, icon: "" },
-        { id: uuid(), name: "Papel transparente", price: 1.35, important: false, icon: "" },
-        { id: uuid(), name: "Papel horno", price: 1.60, important: false, icon: "" },
-      ]},
+        { id: uuid(), name: "Limpieza", icon: "🧼", size: "large", items: [
+          { id: uuid(), name: "Fairy", price: 2.85, important: false, icon: "" },
+          { id: uuid(), name: "CIF", price: 1.75, important: false, icon: "" },
+          { id: uuid(), name: "KH7", price: 2.20, important: false, icon: "" },
+          { id: uuid(), name: "Bayetas", price: 1.25, important: false, icon: "" },
+          { id: uuid(), name: "Estropajo", price: 1.10, important: false, icon: "" },
+          { id: uuid(), name: "Estropajo verde", price: 1.30, important: false, icon: "" },
+          { id: uuid(), name: "Lejía azul", price: 0.85, important: false, icon: "" },
+          { id: uuid(), name: "Lavavajillas", price: 2.10, important: false, icon: "" },
+          { id: uuid(), name: "Abrillantador", price: 3.10, important: false, icon: "" },
+          { id: uuid(), name: "Sal lavavajillas", price: 1.20, important: false, icon: "" },
+          { id: uuid(), name: "Detergente Marsella", price: 6.50, important: false, icon: "" },
+          { id: uuid(), name: "Suavizante blanco", price: 2.20, important: false, icon: "" },
+          { id: uuid(), name: "Lejía ropa", price: 0.90, important: false, icon: "" },
+          { id: uuid(), name: "Fregasuelos", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Fregona", price: 3.50, important: false, icon: "" },
+          { id: uuid(), name: "Bolsas basura", price: 1.50, important: false, icon: "" },
+          { id: uuid(), name: "Rollo cocina", price: 2.00, important: false, icon: "" },
+          { id: uuid(), name: "Papel albal", price: 2.10, important: false, icon: "" },
+          { id: uuid(), name: "Papel transparente", price: 1.35, important: false, icon: "" },
+          { id: uuid(), name: "Papel horno", price: 1.60, important: false, icon: "" },
+        ]},
 
-      { id: uuid(), name: "Panes", icon: "🍞", size: "large", items: [
-        { id: uuid(), name: "Pan molde integral", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Pan molde normal", price: 1.50, important: false, icon: "" },
-        { id: uuid(), name: "Pan tostado integral", price: 1.60, important: false, icon: "" },
-        { id: uuid(), name: "Pan burger", price: 1.35, important: false, icon: "" },
-        { id: uuid(), name: "Pan perritos", price: 1.35, important: false, icon: "" },
-      ]},
-    ],
-    globalOrder: [],
-    list: {},
-    pendingNotes: [],
-    purchases: [],
-    _catalogVersion: CATALOG_VERSION
-  };
+        { id: uuid(), name: "Panes", icon: "🍞", size: "large", items: [
+          { id: uuid(), name: "Pan molde integral", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Pan molde normal", price: 1.50, important: false, icon: "" },
+          { id: uuid(), name: "Pan tostado integral", price: 1.60, important: false, icon: "" },
+          { id: uuid(), name: "Pan burger", price: 1.35, important: false, icon: "" },
+          { id: uuid(), name: "Pan perritos", price: 1.35, important: false, icon: "" },
+        ]},
+      ],
+      globalOrder: [],
+      list: {},             // productos (id -> qty)
+      pendingNotes: [],     // [{id,text,qty,createdAt}]
+      purchases: [],
+      _catalogVersion: CATALOG_VERSION
+    };
+  }
 
   // ---------- DOM ----------
   const el = (id) => document.getElementById(id);
@@ -607,39 +659,54 @@ body{
   // ---------- Storage ----------
   function loadStateOrMigrate(){
     const raw = localStorage.getItem(LS_KEY);
-    if(!raw) return structuredClone(DEFAULT_STATE);
+    if(!raw) return buildDefaultState();
 
     try{
       const parsed = JSON.parse(raw);
 
-      if(!parsed.pendingNotes) parsed.pendingNotes = [];
-      if(!Array.isArray(parsed.pendingNotes)) parsed.pendingNotes = [];
+      // si falta estructura, normaliza
+      const base = buildDefaultState();
+      const normalized = normalizeLoaded(parsed, base);
 
-      // si cambia catálogo en el futuro, carga default nuevo sin mareos
-      if(parsed && parsed._catalogVersion === CATALOG_VERSION) return normalizeLoaded(parsed);
+      // si el catálogo es de otra versión: mantenemos lista/historial/notas/ui, pero cargamos catálogo nuevo
+      if(Number(normalized._catalogVersion) !== CATALOG_VERSION){
+        const keepUi = normalized.ui || {};
+        const keepPurchases = Array.isArray(normalized.purchases) ? normalized.purchases : [];
+        const keepList = normalized.list || {};
+        const keepNotes = Array.isArray(normalized.pendingNotes) ? normalized.pendingNotes : [];
 
-      return structuredClone(DEFAULT_STATE);
+        const ns = buildDefaultState();
+        ns.ui = { ...ns.ui, ...keepUi };
+        ns.purchases = keepPurchases;
+        ns.list = keepList;
+        ns.pendingNotes = keepNotes;
+        ns._catalogVersion = CATALOG_VERSION;
+        return ns;
+      }
+
+      return normalized;
     }catch{
-      return structuredClone(DEFAULT_STATE);
+      return buildDefaultState();
     }
   }
 
-  function normalizeLoaded(parsed){
+  function normalizeLoaded(parsed, base){
     const merged = {
-      ...structuredClone(DEFAULT_STATE),
+      ...structuredClone(base),
       ...parsed,
-      ui: { ...structuredClone(DEFAULT_STATE.ui), ...(parsed.ui||{}) },
-      categories: Array.isArray(parsed.categories) ? parsed.categories : structuredClone(DEFAULT_STATE.categories),
+      ui: { ...structuredClone(base.ui), ...(parsed.ui||{}) },
+      categories: Array.isArray(parsed.categories) ? parsed.categories : structuredClone(base.categories),
       globalOrder: Array.isArray(parsed.globalOrder) ? parsed.globalOrder : [],
       list: parsed.list || {},
       pendingNotes: Array.isArray(parsed.pendingNotes) ? parsed.pendingNotes : [],
       purchases: Array.isArray(parsed.purchases) ? parsed.purchases : [],
-      _catalogVersion: parsed._catalogVersion || 1
+      _catalogVersion: Number(parsed._catalogVersion || 1)
     };
 
     for (const c of merged.categories) {
       if (typeof c.icon !== "string") c.icon = "📦";
       if (!c.size) c.size = "large";
+      if (!Array.isArray(c.items)) c.items = [];
       for (const it of (c.items || [])) {
         if (typeof it.important !== "boolean") it.important = false;
         if (!Number.isFinite(Number(it.price))) it.price = 0;
@@ -718,6 +785,13 @@ body{
       .trim();
   }
 
+  function parsePriceInput(v){
+    const s = String(v ?? "").trim().replace(",", ".");
+    const num = Number(s);
+    if(!Number.isFinite(num) || num < 0) return null;
+    return round2(num);
+  }
+
   // ---------- Sound ----------
   let audioCtx=null;
   function ensureAudio(){
@@ -759,7 +833,6 @@ body{
   function updateListPill(){
     btnOpenList.textContent=`LISTA (${getTotalListQty()})`;
   }
-
   function hasPendingNotes(){
     return Array.isArray(state.pendingNotes) && state.pendingNotes.length > 0;
   }
@@ -841,7 +914,6 @@ body{
     showToast(delta>0?"✅ Añadido a la lista":"➖ Quitado");
     render();
   }
-
   function removeFromList(productId){
     delete state.list[productId];
     saveState();
@@ -860,7 +932,6 @@ body{
     });
     saveState();
   }
-
   function incNote(noteId, delta){
     const n = state.pendingNotes.find(x=>x.id===noteId);
     if(!n) return;
@@ -872,7 +943,6 @@ body{
     }
     saveState();
   }
-
   function deleteNote(noteId){
     state.pendingNotes = state.pendingNotes.filter(x=>x.id!==noteId);
     saveState();
@@ -894,7 +964,6 @@ body{
     modalMask.style.display="flex";
     modalMask.setAttribute("aria-hidden","false");
   }
-
   function closeModal(){
     stopVoiceIfAny();
     modalMask.style.display="none";
@@ -903,7 +972,6 @@ body{
     modalFoot.innerHTML="";
     modalFoot.style.display="none";
   }
-
   modalClose.addEventListener("click", closeModal);
   modalMask.addEventListener("click", (e)=>{ if(e.target===modalMask) closeModal(); });
 
@@ -937,7 +1005,6 @@ body{
   function openList(){
     const notes = state.pendingNotes || [];
     const ordered = buildOrderedProductItems();
-
     const anyItems = (notes.length>0) || (ordered.length>0);
 
     if(!anyItems){
@@ -1402,13 +1469,13 @@ body{
         const name = prompt("Nombre del producto:", note.text) || note.text;
         const icon = prompt("Emoji del producto (opcional):", "") || "";
         const priceRaw = prompt("Precio (€) (opcional):", "0") || "0";
-        const price = Number(String(priceRaw).replace(",", "."));
+        const price = parsePriceInput(priceRaw);
 
         const newItem = {
           id: uuid(),
           name: String(name).trim(),
           icon: String(icon).trim(),
-          price: Number.isFinite(price) ? price : 0,
+          price: price ?? 0,
           important: false
         };
 
@@ -1431,18 +1498,282 @@ body{
     });
   }
 
-  // ---------- Admin ----------
+  // ---------- ADMIN (REAL + EDITAR PRECIOS) ----------
   function openAdmin(){
-    openModal("⚙️ Admin", `
+    const cols = Number(state.ui.homeColumns||2);
+    const snd = !!state.ui.soundEnabled;
+
+    openModal("⚙️ Ajustes", `
       <div class="adminCard">
-        <div style="font-weight:1000;font-size:18px;">Admin</div>
-        <div class="muted">Base estable. (Opciones admin las añadimos cuando tú quieras.)</div>
+        <div style="font-weight:1000;font-size:18px;">Vista</div>
+        <div class="muted" style="margin-top:8px;">Columnas en categorías</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="mini" id="btnCols2">${cols===2?"✅ ":""}2 columnas</button>
+          <button class="mini" id="btnCols3">${cols===3?"✅ ":""}3 columnas (pantalla grande)</button>
+        </div>
       </div>
+
       <div class="adminCard">
-        <button class="mini" id="btnCloseAdmin">Cerrar</button>
+        <div style="font-weight:1000;font-size:18px;">Sonido</div>
+        <div class="muted" style="margin-top:8px;">Beep al añadir / confirmar</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="mini" id="btnSoundToggle">${snd?"✅ Activado":"❌ Desactivado"}</button>
+        </div>
       </div>
+
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Precios</div>
+        <div class="muted" style="margin-top:8px;">Editar precios por producto</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="mini" id="btnOpenPrices">💶 Editar precios</button>
+        </div>
+      </div>
+
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Limpieza rápida</div>
+        <div class="muted" style="margin-top:8px;">Sin tocar tu catálogo</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="mini danger" id="btnClearList">🗑️ Borrar lista</button>
+          <button class="mini danger" id="btnClearHistory">🗑️ Borrar historial</button>
+        </div>
+      </div>
+
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Catálogo AMAMA</div>
+        <div class="muted" style="margin-top:8px;">Vuelve al catálogo base (AMAMA)</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="mini danger" id="btnResetCatalog">♻️ Reset catálogo AMAMA</button>
+        </div>
+      </div>
+
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Recarga fuerte</div>
+        <div class="muted" style="margin-top:8px;">Limpia caché + Service Worker y recarga</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="mini" id="btnHardReload">🔄 Recarga fuerte</button>
+        </div>
+      </div>
+    `, `
+      <button class="action secondary" id="btnCloseAdmin">Cerrar</button>
     `);
-    modalBody.querySelector("#btnCloseAdmin")?.addEventListener("click", closeModal);
+
+    modalFoot.querySelector("#btnCloseAdmin")?.addEventListener("click", closeModal);
+
+    modalBody.querySelector("#btnCols2")?.addEventListener("click", ()=>{
+      state.ui.homeColumns = 2;
+      saveState();
+      applyColumns();
+      render();
+      showToast("✅ 2 columnas");
+      openAdmin();
+    });
+
+    modalBody.querySelector("#btnCols3")?.addEventListener("click", ()=>{
+      state.ui.homeColumns = 3;
+      saveState();
+      applyColumns();
+      render();
+      showToast("✅ 3 columnas");
+      openAdmin();
+    });
+
+    modalBody.querySelector("#btnSoundToggle")?.addEventListener("click", ()=>{
+      state.ui.soundEnabled = !state.ui.soundEnabled;
+      saveState();
+      showToast(state.ui.soundEnabled ? "🔊 Sonido activado" : "🔇 Sonido desactivado");
+      openAdmin();
+    });
+
+    modalBody.querySelector("#btnClearList")?.addEventListener("click", ()=>{
+      if(!confirm("¿Vaciar la lista actual?")) return;
+      state.list = {};
+      saveState();
+      render();
+      showToast("🗑️ Lista vacía");
+      openAdmin();
+    });
+
+    modalBody.querySelector("#btnClearHistory")?.addEventListener("click", ()=>{
+      if(!confirm("¿Borrar TODO el historial?")) return;
+      state.purchases = [];
+      saveState();
+      showToast("🗑️ Historial borrado");
+      openAdmin();
+    });
+
+    modalBody.querySelector("#btnResetCatalog")?.addEventListener("click", ()=>{
+      if(!confirm("¿Reset catálogo AMAMA? (Mantiene lista e historial)")) return;
+      const keepUi = state.ui || {};
+      const keepPurchases = Array.isArray(state.purchases) ? state.purchases : [];
+      const keepList = state.list || {};
+      const keepNotes = Array.isArray(state.pendingNotes) ? state.pendingNotes : [];
+
+      const ns = buildDefaultState();
+      ns.ui = { ...ns.ui, ...keepUi };
+      ns.purchases = keepPurchases;
+      ns.list = keepList;
+      ns.pendingNotes = keepNotes;
+
+      state = ns;
+      ensureGlobalOrderIntegrity();
+      saveState();
+      render();
+      showToast("♻️ Catálogo reseteado");
+      openAdmin();
+    });
+
+    modalBody.querySelector("#btnHardReload")?.addEventListener("click", hardReload);
+
+    modalBody.querySelector("#btnOpenPrices")?.addEventListener("click", openPricesAdmin);
+  }
+
+  function openPricesAdmin(){
+    const categories = state.categories || [];
+    const catOptions = [
+      `<option value="__ALL__">Todas las categorías</option>`,
+      ...categories.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`)
+    ].join("");
+
+    openModal("💶 Editar precios", `
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Filtro</div>
+        <div class="muted" style="margin-top:8px;">Busca por nombre o filtra por categoría</div>
+        <div style="display:grid;gap:12px;margin-top:12px;">
+          <select class="select" id="priceCat">${catOptions}</select>
+          <input class="input" id="priceSearch" placeholder="Buscar… (ej: leche, papel, aceite)" />
+        </div>
+      </div>
+
+      <div class="adminCard" id="priceListWrap">
+        <div style="font-weight:1000;font-size:18px;">Productos</div>
+        <div class="muted" style="margin-top:8px;">Escribe el precio y se guarda al salir del campo</div>
+      </div>
+    `, `
+      <button class="action secondary" id="btnBackAdmin">⬅️ Volver</button>
+      <button class="action" id="btnSavePrices">💾 Guardar</button>
+    `);
+
+    const sel = modalBody.querySelector("#priceCat");
+    const inp = modalBody.querySelector("#priceSearch");
+    const wrap = modalBody.querySelector("#priceListWrap");
+
+    // buffer de cambios: productId -> newPrice
+    const pending = new Map();
+
+    function getFilteredProducts(){
+      const q = norm(inp?.value || "");
+      const catId = sel?.value || "__ALL__";
+      const all = allProductsFlat().map(x=>({
+        catId: x.category.id,
+        catName: x.category.name,
+        productId: x.product.id,
+        name: x.product.name,
+        price: Number(x.product.price)||0
+      }));
+
+      return all.filter(p=>{
+        const okCat = (catId==="__ALL__") ? true : (p.catId===catId);
+        const okQ = !q ? true : norm(p.name).includes(q);
+        return okCat && okQ;
+      }).sort((a,b)=>a.name.localeCompare(b.name,"es",{sensitivity:"base"}));
+    }
+
+    function renderList(){
+      const items = getFilteredProducts();
+
+      let html = `
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+          <div style="font-weight:1000;font-size:18px;">Productos</div>
+          <div class="pill">Mostrando: ${items.length}</div>
+        </div>
+        <div class="muted" style="margin-top:8px;">Formato: 2,35 o 2.35</div>
+        <div style="margin-top:12px;"></div>
+      `;
+
+      for(const p of items){
+        const current = pending.has(p.productId) ? pending.get(p.productId) : p.price;
+        const val = (Number(current)||0).toFixed(2).replace(".", ",");
+        html += `
+          <div class="rowItem">
+            <div class="priceRow" style="width:100%;">
+              <div class="priceName">
+                ${escapeHtml(p.name)}
+                <div class="muted" style="margin-top:4px;">${escapeHtml(p.catName)}</div>
+              </div>
+              <input class="priceInp" inputmode="decimal" data-pid="${escapeHtml(p.productId)}" value="${escapeHtml(val)}" />
+            </div>
+          </div>
+        `;
+      }
+
+      wrap.innerHTML = html;
+
+      wrap.querySelectorAll("input[data-pid]").forEach(input=>{
+        input.addEventListener("blur", ()=>{
+          const pid = input.getAttribute("data-pid");
+          if(!pid) return;
+          const parsed = parsePriceInput(input.value);
+          if(parsed === null){
+            showToast("⚠️ Precio inválido");
+            const found = findProduct(pid);
+            const cur = Number(found?.item?.price)||0;
+            input.value = cur.toFixed(2).replace(".", ",");
+            pending.delete(pid);
+            return;
+          }
+          pending.set(pid, parsed);
+          showToast("✅ Precio listo");
+        });
+      });
+    }
+
+    function applyPending(){
+      if(pending.size===0){
+        showToast("ℹ️ Nada que guardar");
+        return;
+      }
+
+      for(const [pid, price] of pending.entries()){
+        const found = findProduct(pid);
+        if(found && found.item){
+          found.item.price = Number(price)||0;
+        }
+      }
+      pending.clear();
+      saveState();
+      showToast("💾 Precios guardados");
+      render();
+      renderList();
+    }
+
+    sel?.addEventListener("change", renderList);
+    inp?.addEventListener("input", renderList);
+
+    modalFoot.querySelector("#btnBackAdmin")?.addEventListener("click", openAdmin);
+    modalFoot.querySelector("#btnSavePrices")?.addEventListener("click", applyPending);
+
+    renderList();
+  }
+
+  async function hardReload(){
+    // Esto evita que tengas que ir a DevTools: borra caches, desregistra SW, y recarga.
+    try{
+      // 1) caches
+      if("caches" in window){
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      // 2) service workers
+      if("serviceWorker" in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      // 3) opcional: no borramos tu localStorage aquí (porque perderías datos)
+      showToast("🔄 Recargando…");
+    }catch{
+      // aunque falle algo, recargamos
+    }
+    setTimeout(()=>location.reload(true), 200);
   }
 
   // ---------- VOZ ----------
@@ -1469,7 +1800,7 @@ body{
       openModal("🎤 Voz", `
         <div class="voiceBox">
           <p class="voiceBig">Este dispositivo no soporta reconocimiento de voz.</p>
-          <div class="voiceSub">Prueba en Chrome (Android) actualizado.</div>
+          <div class="voiceSub">Prueba en Chrome actualizado.</div>
         </div>
       `, `<button class="action secondary" id="btnCloseVoice">Cerrar</button>`);
       modalFoot.querySelector("#btnCloseVoice")?.addEventListener("click", closeModal);
@@ -1530,7 +1861,6 @@ body{
 
   function extractQtyAndName(partRaw){
     let s = norm(partRaw);
-
     s = s.replace(/\b(anade|añade|pon|mete|agrega|comprar|compra|necesito|quiero|por favor)\b/g, " ").replace(/\s+/g," ").trim();
 
     let m = s.match(/\bx\s*(\d{1,2})\b/);
@@ -1572,12 +1902,11 @@ body{
     return t.split(",").map(x=>x.trim()).filter(Boolean);
   }
 
-  // Regla: “docena de huevos” = 1 producto: Huevos 12
+  // Regla AMAMA: huevos/docena/12 huevos => producto Huevos 12
   function wantsEggPack12(nameNorm){
     const hasEgg = /\bhuevo(s)?\b/.test(nameNorm);
     return !!hasEgg;
   }
-
   function computeEggPackQty(partNorm){
     if(/\bdocena(s)?\b/.test(partNorm)){
       const m = partNorm.match(/\b(\d{1,2})\s+docena/);
@@ -1640,7 +1969,6 @@ body{
     for(const part of parts){
       const { qty, name } = extractQtyAndName(part);
       const nameNorm = norm(name);
-
       if(!nameNorm) continue;
 
       if(wantsEggPack12(nameNorm)){
@@ -1792,7 +2120,6 @@ body{
         else showToast(`✅ Añadido(s)`);
 
         closeModal();
-
         if(notesMade>0) openList();
       });
     }
@@ -1824,6 +2151,7 @@ body{
   </script>
 
   <script>
+    // PWA
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
