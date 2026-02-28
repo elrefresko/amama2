@@ -1,3 +1,4 @@
+<!-- index.html (BORRA TODO Y PEGA ESTO ENTERO) -->
 <!doctype html>
 <html lang="es">
 <head>
@@ -394,6 +395,49 @@ body{
   text-align:right;
 }
 
+/* ===== Orden (drag & drop) ===== */
+.dragRow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+}
+.dragHandle{
+  width:54px;
+  height:54px;
+  border-radius:16px;
+  border:1px solid rgba(0,0,0,.10);
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  background:#f7faf9;
+  cursor:grab;
+  flex: 0 0 auto;
+}
+.dragHandle:active{ cursor:grabbing; }
+.dragMeta{
+  flex:1;
+  min-width: 220px;
+}
+.dragName{
+  font-weight:1000;
+  font-size:20px;
+}
+.dragCat{
+  margin-top:4px;
+  color:#666;
+  font-weight:800;
+}
+.dragHint{
+  font-weight:1000;
+  color:#666;
+  margin-top:10px;
+}
+.dragOver{
+  outline: 3px dashed rgba(0,168,132,.55);
+  outline-offset: 6px;
+}
+
 /* ================= TOAST ================= */
 .toast{
   position:fixed;
@@ -663,11 +707,9 @@ body{
     try{
       const parsed = JSON.parse(raw);
 
-      // si falta estructura, normaliza
       const base = buildDefaultState();
       const normalized = normalizeLoaded(parsed, base);
 
-      // si el catálogo es de otra versión: mantenemos lista/historial/notas/ui, pero cargamos catálogo nuevo
       if(Number(normalized._catalogVersion) !== CATALOG_VERSION){
         const keepUi = normalized.ui || {};
         const keepPurchases = Array.isArray(normalized.purchases) ? normalized.purchases : [];
@@ -769,6 +811,16 @@ body{
     for(const id of allIds){
       if(!state.globalOrder.includes(id)) state.globalOrder.push(id);
     }
+  }
+
+  function resetGlobalOrderToCatalog(){
+    // Orden por catálogo: recorrido categorías y sus items en su orden actual
+    const ids = [];
+    for(const c of state.categories){
+      for(const it of (c.items||[])) ids.push(it.id);
+    }
+    state.globalOrder = ids;
+    ensureGlobalOrderIntegrity();
   }
 
   function round2(n){ return Math.round((Number(n)||0)*100)/100; }
@@ -983,6 +1035,7 @@ body{
     ensureGlobalOrderIntegrity();
 
     const items=[];
+    // 1) en tu orden global (recogida súper)
     for(const pid of state.globalOrder){
       const qty=Number(state.list[pid]||0);
       if(qty<=0) continue;
@@ -990,6 +1043,7 @@ body{
       if(!found) continue;
       items.push({productId:pid, name:found.item.name, qty});
     }
+    // 2) fallback por si algo quedase fuera
     for(const pid of Object.keys(state.list)){
       if(state.globalOrder.includes(pid)) continue;
       const qty=Number(state.list[pid]||0);
@@ -1497,7 +1551,7 @@ body{
     });
   }
 
-  // ---------- ADMIN (REAL + EDITAR PRECIOS) ----------
+  // ---------- ADMIN (REAL + PRECIOS + ORDEN RECOGIDA) ----------
   function openAdmin(){
     const cols = Number(state.ui.homeColumns||2);
     const snd = !!state.ui.soundEnabled;
@@ -1517,6 +1571,14 @@ body{
         <div class="muted" style="margin-top:8px;">Beep al añadir / confirmar</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
           <button class="mini" id="btnSoundToggle">${snd?"✅ Activado":"❌ Desactivado"}</button>
+        </div>
+      </div>
+
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Orden de recogida (supermercado)</div>
+        <div class="muted" style="margin-top:8px;">Este orden es el que usa la LISTA</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="mini" id="btnOpenOrder">🧾 Ordenar productos</button>
         </div>
       </div>
 
@@ -1622,10 +1684,172 @@ body{
     });
 
     modalBody.querySelector("#btnHardReload")?.addEventListener("click", hardReload);
-
     modalBody.querySelector("#btnOpenPrices")?.addEventListener("click", openPricesAdmin);
+    modalBody.querySelector("#btnOpenOrder")?.addEventListener("click", openOrderAdmin);
   }
 
+  // ===== ORDEN DE RECOGIDA (Drag & Drop) =====
+  function openOrderAdmin(){
+    ensureGlobalOrderIntegrity();
+
+    openModal("🧾 Orden de recogida", `
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Cómo funciona</div>
+        <div class="muted" style="margin-top:8px;">
+          Arrastra los productos para ponerlos en el orden que tú recorres el supermercado.
+          <br>La pantalla <b>LISTA</b> usará exactamente este orden.
+        </div>
+        <div class="dragHint">Consejo: usa el icono ☰ para arrastrar.</div>
+      </div>
+
+      <div class="adminCard">
+        <div style="font-weight:1000;font-size:18px;">Buscar rápido</div>
+        <div class="muted" style="margin-top:8px;">Escribe un nombre y te lo resalto (no filtra, solo te guía)</div>
+        <div style="margin-top:12px;">
+          <input class="input" id="orderSearch" placeholder="Buscar… (ej: leche, aceite, papel)" />
+        </div>
+      </div>
+
+      <div class="adminCard" id="orderListWrap">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+          <div style="font-weight:1000;font-size:18px;">Tu orden</div>
+          <div class="pill">${state.globalOrder.length} productos</div>
+        </div>
+        <div class="muted" style="margin-top:8px;">Arrastra y suelta para reordenar</div>
+
+        <div id="orderList" style="margin-top:12px;"></div>
+      </div>
+    `, `
+      <button class="action secondary" id="btnBackAdmin">⬅️ Volver</button>
+      <button class="action secondary" id="btnResetOrder">↩️ Orden como catálogo</button>
+      <button class="action" id="btnSaveOrder">💾 Guardar orden</button>
+    `);
+
+    const listEl = modalBody.querySelector("#orderList");
+    const searchEl = modalBody.querySelector("#orderSearch");
+
+    let draggingId = null;
+
+    function renderOrderList(){
+      listEl.innerHTML = "";
+      for(const pid of state.globalOrder){
+        const found = findProduct(pid);
+        if(!found) continue;
+
+        const row = document.createElement("div");
+        row.className = "rowItem";
+        row.setAttribute("data-pid", pid);
+        row.setAttribute("draggable", "true");
+
+        row.innerHTML = `
+          <div class="dragRow">
+            <div class="dragHandle" title="Arrastrar">☰</div>
+            <div class="dragMeta">
+              <div class="dragName">${escapeHtml(found.item.name)}</div>
+              <div class="dragCat">${escapeHtml(found.category.name)}</div>
+            </div>
+          </div>
+        `;
+
+        row.addEventListener("dragstart", (e)=>{
+          draggingId = pid;
+          e.dataTransfer.effectAllowed = "move";
+          try{ e.dataTransfer.setData("text/plain", pid); }catch{}
+          row.style.opacity = "0.6";
+        });
+
+        row.addEventListener("dragend", ()=>{
+          draggingId = null;
+          row.style.opacity = "1";
+          listEl.querySelectorAll(".dragOver").forEach(x=>x.classList.remove("dragOver"));
+        });
+
+        row.addEventListener("dragover", (e)=>{
+          e.preventDefault();
+          row.classList.add("dragOver");
+          e.dataTransfer.dropEffect = "move";
+        });
+
+        row.addEventListener("dragleave", ()=>{
+          row.classList.remove("dragOver");
+        });
+
+        row.addEventListener("drop", (e)=>{
+          e.preventDefault();
+          row.classList.remove("dragOver");
+
+          const fromId = draggingId || (()=>{
+            try{ return e.dataTransfer.getData("text/plain"); }catch{ return null; }
+          })();
+          const toId = pid;
+
+          if(!fromId || fromId === toId) return;
+
+          // reordenar en state.globalOrder (solo en memoria; se guarda con botón)
+          const arr = [...state.globalOrder];
+          const fromIdx = arr.indexOf(fromId);
+          const toIdx = arr.indexOf(toId);
+          if(fromIdx === -1 || toIdx === -1) return;
+
+          arr.splice(fromIdx, 1);
+          arr.splice(toIdx, 0, fromId);
+
+          state.globalOrder = arr;
+          renderOrderList();
+        });
+
+        listEl.appendChild(row);
+      }
+    }
+
+    function highlightSearch(){
+      const q = norm(searchEl.value);
+      const rows = Array.from(listEl.querySelectorAll("[data-pid]"));
+      rows.forEach(r=>r.style.outline = "");
+
+      if(!q) return;
+
+      const foundRow = rows.find(r=>{
+        const pid = r.getAttribute("data-pid");
+        const fp = pid ? findProduct(pid) : null;
+        if(!fp) return false;
+        return norm(fp.item.name).includes(q);
+      });
+
+      if(foundRow){
+        foundRow.style.outline = "4px solid rgba(0,168,132,.45)";
+        foundRow.scrollIntoView({behavior:"smooth", block:"center"});
+      }else{
+        showToast("ℹ️ No encontrado");
+      }
+    }
+
+    searchEl?.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter") highlightSearch();
+    });
+
+    modalFoot.querySelector("#btnBackAdmin")?.addEventListener("click", openAdmin);
+
+    modalFoot.querySelector("#btnResetOrder")?.addEventListener("click", ()=>{
+      if(!confirm("¿Poner el orden como el catálogo actual?")) return;
+      resetGlobalOrderToCatalog();
+      renderOrderList();
+      showToast("↩️ Orden restablecido");
+    });
+
+    modalFoot.querySelector("#btnSaveOrder")?.addEventListener("click", ()=>{
+      // Guardar ya está en state.globalOrder (lo hemos ido modificando)
+      ensureGlobalOrderIntegrity();
+      saveState();
+      showToast("💾 Orden guardado");
+      // importante: cuando vuelvas a LISTA, ya sale en este orden
+      openAdmin();
+    });
+
+    renderOrderList();
+  }
+
+  // ---------- PRECIOS ----------
   function openPricesAdmin(){
     const categories = state.categories || [];
     const catOptions = [
@@ -1656,7 +1880,6 @@ body{
     const inp = modalBody.querySelector("#priceSearch");
     const wrap = modalBody.querySelector("#priceListWrap");
 
-    // buffer de cambios: productId -> newPrice
     const pending = new Map();
 
     function getFilteredProducts(){
@@ -1755,23 +1978,17 @@ body{
   }
 
   async function hardReload(){
-    // Esto evita que tengas que ir a DevTools: borra caches, desregistra SW, y recarga.
     try{
-      // 1) caches
       if("caches" in window){
         const keys = await caches.keys();
         await Promise.all(keys.map(k => caches.delete(k)));
       }
-      // 2) service workers
       if("serviceWorker" in navigator){
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(r => r.unregister()));
       }
-      // 3) opcional: no borramos tu localStorage aquí (porque perderías datos)
       showToast("🔄 Recargando…");
-    }catch{
-      // aunque falle algo, recargamos
-    }
+    }catch{}
     setTimeout(()=>location.reload(true), 200);
   }
 
