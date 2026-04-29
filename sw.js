@@ -1,5 +1,5 @@
 {
-  "name": "Programa Compras AMAMA v6",
+  "name": "programa_compras_amama_state_tickets_v1",
   "short_name": "AMAMA",
   "start_url": "./",
   "scope": "./",
